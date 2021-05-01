@@ -15,15 +15,19 @@ from pages import (
 )
 from utils import Header, make_dash_table, stocks, plotly_colors
 import pandas as pd
+import numpy as np
 import yfinance as yf
 
-# Creating an empty portfolio and diversification dataframe
+# Creating an empty portfolio, diversification and returns dataframe
 # TODO: allow uploading a CSV file with tickers and number of shares
 df_portfolio = pd.DataFrame(columns=['Ticker', 'Name', 'Number of Shares', 'Price', 'Value (USD)', 'Industry'])
 df_portfolio.to_csv('data/df_portfolio.csv', index=False)
 
 df_diversification = pd.DataFrame(columns=['Industry', 'Total Value', 'Relative Value'])
 df_diversification.to_csv('data/df_sector_diversification.csv', index=False)
+
+df_returns = pd.DataFrame(columns=['Date', 'Return'])
+df_returns.to_csv('data/df_portfolio_returns.csv', index=False)
 
 app = dash.Dash(
     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}]
@@ -34,7 +38,6 @@ server = app.server
 app.layout = html.Div(
     [dcc.Location(id="url", refresh=False), html.Div(id="page-content")]
 )
-
 
 # Update page when the menu is used to navigate
 @app.callback(
@@ -54,8 +57,6 @@ def display_page(
         return overview.create_layout(app)
     else:
         return ourApproach.create_layout(app)
-
-
 
 ##########################
 # Portfolio page callbacks
@@ -254,6 +255,38 @@ def checkInputs(
         return ''
     except:
         return 'FAILED: Please provide a valid number of shares like by example 1.2345.'
+
+############################
+# Performance page callbacks
+############################
+@app.callback(
+    Output('filler', 'children'),
+    Input('table-portfolio-overview', "children"),
+    )
+def getPortfolioReturns(
+    table # not needed but otherwise syntax error
+    ):
+    companies = pd.read_csv('data/df_portfolio.csv')
+    portfolio_value = None
+    total_portfolio_value = sum(companies['Value (USD)'])
+    for index, row in companies.iterrows():
+        company = row['Ticker']
+        returns = yf.Ticker(company).history(period='10y')['Close']
+        if len(returns) > 2517:
+            returns = returns[-2517:]
+        returns = np.array(returns)*row['Number of Shares']
+        if portfolio_value is None:
+            portfolio_value = returns
+        else:
+            portfolio_value = returns + portfolio_value
+    dates = yf.Ticker('AAPL').history(period='10y').index
+    returns = pd.DataFrame(portfolio_value, columns=['Return'])
+    returns.index = dates
+    returns.to_csv("data/df_portfolio_returns.csv")
+    return ''
+
+
+
 
 
 if __name__ == "__main__":

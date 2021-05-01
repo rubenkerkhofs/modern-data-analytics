@@ -4,14 +4,9 @@ import plotly.graph_objs as go
 
 from utils import Header, make_dash_table
 import pandas as pd
-import pathlib
 
-# get relative data folder
-PATH = pathlib.Path(__file__).parent
-DATA_PATH = PATH.joinpath("../data").resolve()
-
-df_portfolio = pd.read_csv(DATA_PATH.joinpath("df_portfolio.csv"))
-df_sector_diversification = pd.read_csv(DATA_PATH.joinpath("df_sector_diversification.csv"))
+df_portfolio = pd.read_csv("data/df_portfolio.csv")
+df_sector_diversification = pd.read_csv("data/df_sector_diversification.csv")
 
 
 def create_layout(app):
@@ -182,6 +177,10 @@ def create_layout(app):
                                 id='fig-sector-diversification'
                             )
                         ],
+                        className="row ",
+                    ),
+                    html.Div(
+                        [html.P('', id='filler')], #used to update returns
                         className="row ",
                     ),
                 ],

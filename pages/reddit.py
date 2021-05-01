@@ -1,15 +1,6 @@
 import dash_html_components as html
 from utils import Header, make_dash_table
 import pandas as pd
-import pathlib
-
-# get relative data folder
-PATH = pathlib.Path(__file__).parent
-DATA_PATH = PATH.joinpath("../data").resolve()
-
-df_dividend = pd.read_csv(DATA_PATH.joinpath("df_dividend.csv"))
-df_realized = pd.read_csv(DATA_PATH.joinpath("df_realized.csv"))
-df_unrealized = pd.read_csv(DATA_PATH.joinpath("df_unrealized.csv"))
 
 
 def create_layout(app):
