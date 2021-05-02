@@ -14,9 +14,10 @@ index_returns = index.history(period='10y')
 
 def create_layout(app):
     portfolio_returns = pd.read_csv('data/df_portfolio_returns.csv')
-    return_10y = "-"
-    return_5y = "-"
-    return_1y = "-"
+    return_10y, return_10y_i  = "-", "-"
+    return_5y, return_5y_i = "-", "-"
+    return_1y, return_1y_i = "-", "-"
+    color_10, color_5, color_1 = 'black', 'black', 'black' 
     if portfolio_returns.shape[0] > 0:
         # Simulate equal start investment in index
         start_investment = portfolio_returns.Return[0]
@@ -24,12 +25,27 @@ def create_layout(app):
         ratio = start_investment/index_start
         index_returns.Close = index_returns['Close']*ratio
         days = portfolio_returns.shape[0]
+        days_i = index_returns.shape[0]
         now = portfolio_returns.Return[days-1]
         ago_5y = portfolio_returns.Return[days-5*365-1]
         ago_1y = portfolio_returns.Return[days-366]
+        index_5y = index_returns['Close'][days_i-5*365-1]
+        index_1y = index_returns['Close'][days_i-365]
+        index_now = index_returns['Close'][days_i-1]
         return_10y = round((now - start_investment)*100/start_investment,2)
-        return_5y = round((now- ago_5y)*100/ago_5y,2)
+        return_5y = round((now - ago_5y)*100/ago_5y,2)
         return_1y = round((now - ago_1y)*100/ago_1y,2)
+        return_10y_i = round((index_now - start_investment)*100/start_investment,2)
+        return_5y_i = round((index_now - index_5y)*100/index_5y,2)
+        return_1y_i = round((index_now - index_1y)*100/index_1y,2)
+        color_10, color_5, color_1 = 'red', 'red', 'red' 
+        if return_10y > return_10y_i:
+            color_10 = 'green'
+        if return_5y > return_5y_i:
+            color_5 = 'green'
+        if return_1y > return_1y_i:
+            color_1 = 'green'
+        
     return html.Div(
         [
             Header(app),
@@ -153,7 +169,12 @@ def create_layout(app):
                             html.P("Return (10y)",
                                 style={'font-size':'140%'}),
                             html.P(str(return_10y) + "%",
-                            style={'font-size':'250%'})
+                            style={'font-size':'250%', 'color': color_10}),
+                            html.P("The return on 10 years of the portfolio is equal to {port_10}% compared to the performance of the MSCI World Index of {in_10}%.".format(
+                                port_10 = return_10y,
+                                in_10 = return_10y_i
+                                ), style={'font-size': '90%'}
+                            )
                             ],
                             className="four columns",
                             style={'text-align': 'center'}
@@ -165,7 +186,12 @@ def create_layout(app):
                             html.P("Return (5y)",
                                 style={'font-size':'140%'}),
                             html.P(str(return_5y) + "%",
-                            style={'font-size':'250%'})
+                            style={'font-size':'250%', 'color': color_5}),
+                            html.P("The return on 5 years of the portfolio is equal to {port_10}% compared to the performance of the MSCI World Index of {in_10}%.".format(
+                                port_10 = return_5y,
+                                in_10 = return_5y_i
+                                ), style={'font-size': '90%'}
+                            )
                             ],
                             className="four columns",
                             style={'text-align': 'center'}
@@ -177,7 +203,12 @@ def create_layout(app):
                             html.P("Return (1y)",
                                 style={'font-size':'140%'}),
                             html.P(str(return_1y) + "%",
-                            style={'font-size':'250%'})
+                            style={'font-size':'250%', 'color': color_1}),
+                            html.P("The return on 1 year of the portfolio is equal to {port_10}% compared to the performance of the MSCI World Index of {in_10}%.".format(
+                                port_10 = return_1y,
+                                in_10 = return_1y_i
+                                ), style={'font-size': '90%'}
+                            )
                             ],
                             className="four columns",
                             style={'text-align': 'center'}
@@ -185,8 +216,71 @@ def create_layout(app):
 
                     ],
                     className="row"
-                )
+                ),
 
+                # Risk assessment title
+                html.Div(
+                    html.H6("Risk assessment", className="subtitle padded"),
+                    className="row ",
+                    ),
+                # Image, volatility and beta
+                html.Div(
+                    children=[
+                        html.Br([]),
+                        html.Br([]),
+                        html.Div(
+                            children=[html.Img(src=app.get_asset_url("stationary_placeholder.jpg"))],
+                            className='eight columns'
+                        ),
+                        html.Div(
+                            children=[
+                                html.Br([]),
+                                html.P("Volatility (GARCH)",  style={'font-size':'140%'}),
+                                html.P("-",  style={'font-size':'250%'}),
+                                html.Br([]),
+                                html.P("Standard deviation",  style={'font-size':'140%'}),
+                                html.P("-",  style={'font-size':'250%'})
+                            ],
+                            className='four columns',
+                            style={'text-align': 'center'}
+                        )
+                    ],
+                    className="row"
+                ),
+                # Value at risk and beta
+                html.Div(children=[
+                    html.Br([]),
+                    html.Br([]),
+                    html.Br([]),
+                    html.Br([]),
+                    html.Div(children=[
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.P("VaR (non-parametric)", style={'font-size':'140%'}),
+                        html.P("-", style={'font-size':'250%'})
+                        ], 
+                        className='four columns',
+                        style={'text-align': 'center'}),
+                    
+                    html.Div(children=[
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.P("Portfolio Beta", style={'font-size':'140%'}),
+                        html.P("-", style={'font-size':'250%'})
+                        ], 
+                        className='three columns',
+                        style={'text-align': 'center'}),
+
+                    html.Div(children=[
+                        html.Img(src=app.get_asset_url("histogram-placeholder.png"),
+                            style={'height':'100%', 'width':'100%'})
+                        ],
+                        className='five columns')
+
+                    ],
+                    className="row")
                 ],
                 className="sub_page",
             ),
