@@ -221,7 +221,7 @@ def update_sector_figure(
     fig = px.bar(sd, x="empty", y="Total Value", color="Industry", 
         title="Industry diversification", hover_data={'empty': False},
         color_discrete_sequence=plotly_colors)
-    fig.update_layout(showlegend=False)
+    #fig.update_layout(showlegend=False)
     fig.update_yaxes(tickprefix="$", showgrid=True)
     fig.update_layout(xaxis_visible=False, xaxis_showticklabels=False)
     fig.update_layout(
@@ -235,8 +235,15 @@ def update_sector_figure(
             bgcolor="white",
             font_size=12,
             font_family="sans-serif"
+            )
         )
-    )
+    fig.update_layout(legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.1,
+            xanchor="right",
+            x=1
+        ))
     return dcc.Graph(figure=fig)
 
 
