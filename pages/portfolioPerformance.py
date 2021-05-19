@@ -3,6 +3,7 @@ import dash_html_components as html
 import plotly.graph_objs as go
 from utils import Header, make_dash_table
 import pandas as pd
+import numpy as np
 import yfinance as yf
 
 # Load the portfolio returns
@@ -17,9 +18,10 @@ def create_layout(app):
     return_10y, return_10y_i  = "-", "-"
     return_5y, return_5y_i = "-", "-"
     return_1y, return_1y_i = "-", "-"
+    beta, VaR, standev = "-", "-", "-"
     color_10, color_5, color_1 = 'black', 'black', 'black' 
     if portfolio_returns.shape[0] > 0:
-        # Simulate equal start investment in index
+        # Simulate equal start investment in index and calculate returns
         start_investment = portfolio_returns.Return[0]
         index_start = index_returns['Close'][0]
         ratio = start_investment/index_start
@@ -45,6 +47,16 @@ def create_layout(app):
             color_5 = 'green'
         if return_1y > return_1y_i:
             color_1 = 'green'
+        
+        # Get the beta
+        f = open('data/beta.txt', 'r')
+        beta = str(round(float(f.readline()), 4))
+        f.close()
+
+        # Get the daily returns
+        daily_returns = np.diff(portfolio_returns.Return, n=1)[-200:]
+        VaR = "$" + str(round(-np.percentile(daily_returns, 1),2)) 
+        standev = str(round(np.std(daily_returns), 2))
         
     return html.Div(
         [
@@ -223,7 +235,7 @@ def create_layout(app):
                     html.H6("Risk assessment", className="subtitle padded"),
                     className="row ",
                     ),
-                # Image, volatility and beta
+                # Image, volatility and standev
                 html.Div(
                     children=[
                         html.Br([]),
@@ -239,7 +251,7 @@ def create_layout(app):
                                 html.P("-",  style={'font-size':'250%'}),
                                 html.Br([]),
                                 html.P("Standard deviation",  style={'font-size':'140%'}),
-                                html.P("-",  style={'font-size':'250%'})
+                                html.P(standev,  style={'font-size':'250%'})
                             ],
                             className='four columns',
                             style={'text-align': 'center'}
@@ -257,8 +269,8 @@ def create_layout(app):
                         html.Br([]),
                         html.Br([]),
                         html.Br([]),
-                        html.P("VaR (non-parametric)", style={'font-size':'140%'}),
-                        html.P("-", style={'font-size':'250%'})
+                        html.P("VaR 1% (non-parametric)", style={'font-size':'140%'}),
+                        html.P(VaR, style={'font-size':'250%'})
                         ], 
                         className='four columns',
                         style={'text-align': 'center'}),
@@ -268,7 +280,7 @@ def create_layout(app):
                         html.Br([]),
                         html.Br([]),
                         html.P("Portfolio Beta", style={'font-size':'140%'}),
-                        html.P("-", style={'font-size':'250%'})
+                        html.P(beta, style={'font-size':'250%'})
                         ], 
                         className='three columns',
                         style={'text-align': 'center'}),

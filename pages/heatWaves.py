@@ -8,6 +8,18 @@ import pandas as pd
 
 
 def create_layout(app):
+    df_portfolio = pd.read_csv('data/df_portfolio.csv')
+    esg_env, esg_soc, esg_gov = "-", "-", "-"
+    if df_portfolio.shape[0] > 0:
+        f = open('data/esg_env.txt', 'r')
+        esg_env = str(round(float(f.readline()), 4))
+        f.close()
+        f = open('data/esg_soc.txt', 'r')
+        esg_soc = str(round(float(f.readline()), 4))
+        f.close()
+        f = open('data/esg_gov.txt', 'r')
+        esg_gov = str(round(float(f.readline()), 4))
+        f.close()
     return html.Div(
         [
             Header(app),
@@ -16,318 +28,92 @@ def create_layout(app):
                 [
                     # Row 1
                     html.Div(
-                        [
-                            html.Div(
-                                [html.H6(["Expenses"], className="subtitle padded")],
+                        [html.Div(
+                                [html.H6(["Global heatwave data"], className="subtitle padded")],
                                 className="twelve columns",
-                            )
-                        ],
+                            )],
                         className="row ",
                     ),
-                    # Row 2
+                    html.P("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."),
+                    # Map
                     html.Div(
-                        [
-                            html.Div(
-                                [
-                                    html.Strong(),
-                                    html.Table(make_dash_table(df_expenses)),
-                                    html.H6(["Minimums"], className="subtitle padded"),
-                                    html.Table(make_dash_table(df_minimums)),
+                            children=[
+                                html.Img(src=app.get_asset_url("heat-waves-placeholder.jpg"),
+                                style={'height':'75%', 'width':'75%'})
                                 ],
-                                className="six columns",
-                            ),
-                            html.Div(
-                                [
-                                    html.Br([]),
-                                    html.Strong(
-                                        "Fees on $10,000 invested over 10 years",
-                                        style={"color": "#3a3a3a"},
-                                    ),
-                                    dcc.Graph(
-                                        id="graph-6",
-                                        figure={
-                                            "data": [
-                                                go.Bar(
-                                                    x=["Category Average", "This fund"],
-                                                    y=["2242", "329"],
-                                                    marker={"color": "#97151c"},
-                                                    name="A",
-                                                ),
-                                                go.Bar(
-                                                    x=["This fund"],
-                                                    y=["1913"],
-                                                    marker={"color": " #dddddd"},
-                                                    name="B",
-                                                ),
-                                            ],
-                                            "layout": go.Layout(
-                                                annotations=[
-                                                    {
-                                                        "x": -0.0111111111111,
-                                                        "y": 2381.92771084,
-                                                        "font": {
-                                                            "color": "#7a7a7a",
-                                                            "family": "Arial sans serif",
-                                                            "size": 8,
-                                                        },
-                                                        "showarrow": False,
-                                                        "text": "$2,242",
-                                                        "xref": "x",
-                                                        "yref": "y",
-                                                    },
-                                                    {
-                                                        "x": 0.995555555556,
-                                                        "y": 509.638554217,
-                                                        "font": {
-                                                            "color": "#7a7a7a",
-                                                            "family": "Arial sans serif",
-                                                            "size": 8,
-                                                        },
-                                                        "showarrow": False,
-                                                        "text": "$329",
-                                                        "xref": "x",
-                                                        "yref": "y",
-                                                    },
-                                                    {
-                                                        "x": 0.995551020408,
-                                                        "y": 1730.32432432,
-                                                        "font": {
-                                                            "color": "#7a7a7a",
-                                                            "family": "Arial sans serif",
-                                                            "size": 8,
-                                                        },
-                                                        "showarrow": False,
-                                                        "text": "You save<br><b>$1,913</b>",
-                                                        "xref": "x",
-                                                        "yref": "y",
-                                                    },
-                                                ],
-                                                autosize=False,
-                                                height=260,
-                                                width=320,
-                                                bargap=0.4,
-                                                barmode="stack",
-                                                hovermode="closest",
-                                                margin={
-                                                    "r": 40,
-                                                    "t": 20,
-                                                    "b": 20,
-                                                    "l": 40,
-                                                },
-                                                showlegend=False,
-                                                title="",
-                                                xaxis={
-                                                    "autorange": True,
-                                                    "range": [-0.5, 1.5],
-                                                    "showline": True,
-                                                    "tickfont": {
-                                                        "family": "Arial sans serif",
-                                                        "size": 8,
-                                                    },
-                                                    "title": "",
-                                                    "type": "category",
-                                                    "zeroline": False,
-                                                },
-                                                yaxis={
-                                                    "autorange": False,
-                                                    "mirror": False,
-                                                    "nticks": 3,
-                                                    "range": [0, 3000],
-                                                    "showgrid": True,
-                                                    "showline": True,
-                                                    "tickfont": {
-                                                        "family": "Arial sans serif",
-                                                        "size": 10,
-                                                    },
-                                                    "tickprefix": "$",
-                                                    "title": "",
-                                                    "type": "linear",
-                                                    "zeroline": False,
-                                                },
-                                            ),
-                                        },
-                                        config={"displayModeBar": False},
-                                    ),
-                                ],
-                                className="six columns",
-                            ),
-                        ],
+                            className='twelve columns',
+                            style={'text-align': 'center'}
+                        ),
+                    
+                    # Country-specific data
+                    html.Div(
+                        [html.Div(
+                                [html.H6(["Country-specific data"], className="subtitle padded")],
+                                className="twelve columns",
+                            )],
                         className="row ",
                     ),
-                    # Row 3
+                    html.P("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."),
+                   
+                    # ESG section
                     html.Div(
-                        [
-                            html.Div(
-                                [
-                                    html.H6(["Fees"], className="subtitle"),
-                                    html.Br([]),
-                                    html.Div(
-                                        [
-                                            html.Div(
-                                                [
-                                                    html.Div(
-                                                        [
-                                                            html.Strong(
-                                                                ["Purchase fee"],
-                                                                style={
-                                                                    "color": "#515151"
-                                                                },
-                                                            )
-                                                        ],
-                                                        className="three columns right-aligned",
-                                                    ),
-                                                    html.Div(
-                                                        [
-                                                            html.P(
-                                                                ["None"],
-                                                                style={
-                                                                    "color": "#7a7a7a"
-                                                                },
-                                                            )
-                                                        ],
-                                                        className="nine columns",
-                                                    ),
-                                                ],
-                                                className="row",
-                                                style={
-                                                    "background-color": "#f9f9f9",
-                                                    "padding-top": "20px",
-                                                },
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Div(
-                                                        [
-                                                            html.Strong(
-                                                                ["Redemption fee"],
-                                                                style={
-                                                                    "color": "#515151"
-                                                                },
-                                                            )
-                                                        ],
-                                                        className="three columns right-aligned",
-                                                    ),
-                                                    html.Div(
-                                                        [
-                                                            html.P(
-                                                                ["None"],
-                                                                style={
-                                                                    "color": "#7a7a7a"
-                                                                },
-                                                            )
-                                                        ],
-                                                        className="nine columns",
-                                                    ),
-                                                ],
-                                                className="row",
-                                                style={"background-color": "#f9f9f9"},
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Div(
-                                                        [
-                                                            html.Strong(
-                                                                ["12b-1 fee"],
-                                                                style={
-                                                                    "color": "#515151"
-                                                                },
-                                                            )
-                                                        ],
-                                                        className="three columns right-aligned",
-                                                    ),
-                                                    html.Div(
-                                                        [
-                                                            html.P(
-                                                                ["None"],
-                                                                style={
-                                                                    "color": "#7a7a7a"
-                                                                },
-                                                            )
-                                                        ],
-                                                        className="nine columns",
-                                                    ),
-                                                ],
-                                                className="row",
-                                                style={"background-color": "#f9f9f9"},
-                                            ),
-                                        ],
-                                        className="fees",
-                                    ),
-                                    html.Div(
-                                        [
-                                            html.Div(
-                                                [
-                                                    html.Strong(
-                                                        ["Account service fee"],
-                                                        style={"color": "#515151"},
-                                                    )
-                                                ],
-                                                className="three columns right-aligned",
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Strong(
-                                                        [
-                                                            "Nonretirement accounts, traditional IRAs, Roth IRAs, UGMAs/UTMAs, SEP-IRAs, and education savings accounts (ESAs)"
-                                                        ],
-                                                        style={"color": "#515151"},
-                                                    ),
-                                                    html.P(
-                                                        [
-                                                            "We charge a $20 annual account service fee for each Brokerage Account, as well as each individual mutual fund holding with a balance of less than $10,000 in an account. This fee does not apply if you sign up for account and choose electronic delivery of statements, confirmations, and fund reports and prospectuses. This fee also does not apply to members of Flagship Select™, Flagship®, Voyager Select®, and Voyager® Services."
-                                                        ],
-                                                        style={"color": "#7a7a7a"},
-                                                    ),
-                                                    html.Br([]),
-                                                    html.Strong(
-                                                        ["SIMPLE IRAs"],
-                                                        style={"color": "#515151"},
-                                                    ),
-                                                    html.P(
-                                                        [
-                                                            "We charge participants a $25 annual account service fee for each fund they hold in their SIMPLE IRA. This fee does not apply to members of Flagship Select, Flagship, Voyager Select, and Voyager Services."
-                                                        ],
-                                                        style={"color": "#7a7a7a"},
-                                                    ),
-                                                    html.Br([]),
-                                                    html.Strong(
-                                                        ["403(b)(7) plans"],
-                                                        style={"color": "#515151"},
-                                                    ),
-                                                    html.P(
-                                                        [
-                                                            "We charge participants a $15 annual account service fee for each fund they hold in their 403(b)(7) account. This fee does not apply to members of Flagship Select, Flagship, Voyager Select, and Voyager Services."
-                                                        ],
-                                                        style={"color": "#7a7a7a"},
-                                                    ),
-                                                    html.Br([]),
-                                                    html.Strong(
-                                                        ["Individual 401(k) plans"],
-                                                        style={"color": "#515151"},
-                                                    ),
-                                                    html.P(
-                                                        [
-                                                            "We charge participants a $20 annual account service fee for each fund they hold in their Individual 401(k) account. This fee will be waived for all participants in the plan if at least 1 participant qualifies for Flagship Select, Flagship, Voyager Select, and Voyager Services"
-                                                        ],
-                                                        style={"color": "#7a7a7a"},
-                                                    ),
-                                                    html.Br([]),
-                                                ],
-                                                className="nine columns",
-                                            ),
-                                        ],
-                                        className="row",
-                                        style={
-                                            "background-color": "#f9f9f9",
-                                            "padding-bottom": "30px",
-                                        },
-                                    ),
-                                ],
-                                className="twelve columns",
-                            )
-                        ],
-                        className="row",
+                        [html.Div(
+                                [html.H6(["ESG scores portfolio"], className="subtitle padded")],
+                                className="twelve columns"
+                            )],
+                        className="row ",
                     ),
+                    html.Div(children=[
+                        html.P("These ESG Risk Ratings assess the degree to which a company’s enterprise business value is at risk driven by environmental, social and governance issues. A lower score is better. The scores range between 0 and 100."),
+                        html.Div(children=[
+                            html.Br([]),
+                            html.P("Environmental", style={'font-size':'140%'}),
+                            html.Br([]),
+                            html.Img(src=app.get_asset_url("environment.png"),
+                                style={'height':'49%', 'width':'49%'}),
+                            html.Br([]),
+                            html.Br([]),
+                            html.P(esg_env, style={'font-size':'250%'}),
+                                                        html.Br([]),
+                            html.P("Environmental factors range from a company’s greenhouse gas emissions to its treatment of animals.")
+                        ],
+                        className="four columns",
+                        style={'text-align': 'center'}
+                        ),
+                        html.Div(children=[
+                            html.Br([]),
+                            html.P("Social", style={'font-size':'140%'}),
+                            html.Br([]),
+                            html.Img(src=app.get_asset_url("social.png"),
+                                style={'height':'45%', 'width':'45%'}),
+                            html.Br([]),
+                            html.Br([]),
+                            html.P(esg_soc, style={'font-size':'250%'}),
+                            html.Br([]),
+                            html.P("Social factors examine a company’s business relationships with stakeholders throughout the supply chain.")
+                        ],
+                        className="four columns",
+                        style={'text-align': 'center'}
+                        ),
+                        html.Div(children=[
+                            html.Br([]),
+                            html.P("Governance", style={'font-size':'140%'}),
+                            html.Br([]),
+                            html.Img(src=app.get_asset_url("governance.png"),
+                                style={'height':'45%', 'width':'45%'}),
+                            html.Br([]),
+                            html.Br([]),
+                            html.P(esg_gov, style={'font-size':'250%'}),
+                                                        html.Br([]),
+                            html.P("The governance criteria evaluate legal and compliance issues and board operations.")
+                        ],
+                        className="four columns",
+                        style={'text-align': 'center'}
+                        )
+
+                    ],
+                    className="row")
+
                 ],
                 className="sub_page",
             ),

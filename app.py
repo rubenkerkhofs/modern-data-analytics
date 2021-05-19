@@ -266,6 +266,7 @@ def checkInputs(
 ############################
 # Performance page callbacks
 ############################
+
 @app.callback(
     Output('filler', 'children'),
     Input('table-portfolio-overview', "children"),
@@ -275,12 +276,18 @@ def getPortfolioReturns(
     ):
     companies = pd.read_csv('data/df_portfolio.csv')
     portfolio_value = None
+    beta = 0.0
+    esg_env, esg_soc, esg_gov = 0.0, 0.0, 0.0
     total_portfolio_value = sum(companies['Value (USD)'])
     for index, row in companies.iterrows():
         company = row['Ticker']
-        returns = yf.Ticker(company).history(period='10y')['Close']
-        if len(returns) > 2517:
-            returns = returns[-2517:]
+        ticker_company = yf.Ticker(company)
+        returns = ticker_company.history(period='10y')['Close']
+        esg_env = ticker_company.sustainability['Value']['environmentScore']
+        esg_soc = ticker_company.sustainability['Value']['socialScore']
+        esg_gov = ticker_company.sustainability['Value']['governanceScore']
+        beta += (row['Value (USD)']/total_portfolio_value)*ticker_company.info['beta']
+        returns = returns[-2510:]
         returns = np.array(returns)*row['Number of Shares']
         if portfolio_value is None:
             portfolio_value = returns
@@ -288,13 +295,21 @@ def getPortfolioReturns(
             portfolio_value = returns + portfolio_value
     dates = yf.Ticker('AAPL').history(period='10y').index
     returns = pd.DataFrame(portfolio_value, columns=['Return'])
-    returns.index = dates
+    returns.index = dates[-2510:]
     returns.to_csv("data/df_portfolio_returns.csv")
+    with open('data/esg_env.txt', 'w') as f:
+        f.write(str(esg_env))
+    with open('data/esg_soc.txt', 'w') as f:
+        f.write(str(esg_soc))
+    with open('data/esg_gov.txt', 'w') as f:
+        f.write(str(esg_gov))
+    with open('data/beta.txt', 'w') as f:
+        f.write(str(beta))
+    print("written")
     return ''
 
 
-
-
-
 if __name__ == "__main__":
+    #company = yf.Ticker("VZ")
+    #print(company.sustainability['Value']['governanceScore'])
     app.run_server(debug=True)
