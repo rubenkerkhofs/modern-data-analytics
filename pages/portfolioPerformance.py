@@ -1,62 +1,145 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
-from utils import Header, make_dash_table
+from utils import Header, make_dash_table, loadReturns
+from utils import loadColors, loadMetrics, loadDailyReturns
 import pandas as pd
 import numpy as np
 import yfinance as yf
 
-# Load the portfolio returns
-portfolio_returns = pd.read_csv('data/df_portfolio_returns.csv')
-# Load the historic index return
-index = yf.Ticker('XWD.TO')
-index_returns = index.history(period='10y')
+import plotly.express as px
 
+
+def getStationaryFigure(portfolio_returns):
+    return dcc.Graph(
+        id="returns",
+        figure={
+            "data": [
+                go.Scatter(
+                    x=portfolio_returns["Date"],
+                    y=portfolio_returns["daily_returns"],
+                    line={"color": "#04437b"},
+                    mode="lines",
+                    name="Portfolio",
+                )
+            ],
+            "layout": go.Layout(
+                autosize=True,
+                width=450,
+                height=185,
+                font={"family": "Raleway", "size": 10},
+                margin={
+                    "r": 30,
+                    "t": 30,
+                    "b": 30,
+                    "l": 30,
+                },
+                titlefont={
+                    "family": "Raleway",
+                    "size": 10,
+                },
+                xaxis={
+                    "autorange": True,
+                    "range": [
+                        "2007-12-31",
+                        "2018-03-06",
+                    ],
+                    "rangeselector": {
+                        "buttons": [
+                            {
+                                "count": 1,
+                                "label": "1Y",
+                                "step": "year",
+                                "stepmode": "backward",
+                            },
+                            {
+                                "count": 3,
+                                "label": "3Y",
+                                "step": "year",
+                                "stepmode": "backward",
+                            },
+                            {
+                                "count": 5,
+                                "label": "5Y",
+                                "step": "year",
+                            },
+                            {
+                                "count": 10,
+                                "label": "10Y",
+                                "step": "year",
+                                "stepmode": "backward",
+                            },
+                            {
+                                "label": "All",
+                                "step": "all",
+                            },
+                        ]
+                    },
+                    "showline": True,
+                    "type": "date",
+                    "zeroline": False,
+                },
+                yaxis={
+                    "autorange": True,
+                    "range": [
+                        -1, 1
+                    ],
+                    "showline": True,
+                    "type": "linear",
+                    "zeroline": False,
+                },
+            ),
+        },
+        config={"displayModeBar": False},
+    )
+
+
+def getHistogram(df):
+    fig = px.histogram(df, x="daily_returns",
+        width=300, height=150,
+        labels = dict(daily_returns="Daily return"),
+        color_discrete_sequence=["#04437b"])
+
+    try:
+        VaR = np.percentile(df['daily_returns'], 1)
+    except:
+        VaR = 0
+    fig.add_shape(
+        go.layout.Shape(type='line', xref='x', yref='y',
+                        x0=VaR, y0=0, x1=VaR, y1=150, line=dict(color="Red")
+                        ),
+                        row=1, col=1
+    )
+    fig.update_layout(yaxis_visible=False, yaxis_showticklabels=False)
+    fig.update_layout(
+        font_family="sans-serif",
+        font_color="black",
+        title_x=0.5,
+        title_y = 0.82,
+        paper_bgcolor='rgba(0,0,0,0)', # No background
+        plot_bgcolor='rgba(0,0,0,0)', # No background
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12,
+            font_family="sans-serif"
+            ),
+        margin=dict(l=0, r=0, t=0, b=0)
+        )
+    return dcc.Graph(figure=fig)
 
 def create_layout(app):
+    # Load all necessary information and calculate metrics
     portfolio_returns = pd.read_csv('data/df_portfolio_returns.csv')
-    return_10y, return_10y_i  = "-", "-"
-    return_5y, return_5y_i = "-", "-"
-    return_1y, return_1y_i = "-", "-"
-    beta, VaR, standev = "-", "-", "-"
-    color_10, color_5, color_1 = 'black', 'black', 'black' 
-    if portfolio_returns.shape[0] > 0:
-        # Simulate equal start investment in index and calculate returns
-        start_investment = portfolio_returns.Return[0]
-        index_start = index_returns['Close'][0]
-        ratio = start_investment/index_start
-        index_returns.Close = index_returns['Close']*ratio
-        days = portfolio_returns.shape[0]
-        days_i = index_returns.shape[0]
-        now = portfolio_returns.Return[days-1]
-        ago_5y = portfolio_returns.Return[days-5*365-1]
-        ago_1y = portfolio_returns.Return[days-366]
-        index_5y = index_returns['Close'][days_i-5*365-1]
-        index_1y = index_returns['Close'][days_i-365]
-        index_now = index_returns['Close'][days_i-1]
-        return_10y = round((now - start_investment)*100/start_investment,2)
-        return_5y = round((now - ago_5y)*100/ago_5y,2)
-        return_1y = round((now - ago_1y)*100/ago_1y,2)
-        return_10y_i = round((index_now - start_investment)*100/start_investment,2)
-        return_5y_i = round((index_now - index_5y)*100/index_5y,2)
-        return_1y_i = round((index_now - index_1y)*100/index_1y,2)
-        color_10, color_5, color_1 = 'red', 'red', 'red' 
-        if return_10y > return_10y_i:
-            color_10 = 'green'
-        if return_5y > return_5y_i:
-            color_5 = 'green'
-        if return_1y > return_1y_i:
-            color_1 = 'green'
-        
-        # Get the beta
-        f = open('data/beta.txt', 'r')
-        beta = str(round(float(f.readline()), 4))
-        f.close()
+    index = yf.Ticker('XWD.TO')
+    index_returns = index.history(period='10y')
+    return_1y, return_5y, return_10y, return_1y_i, return_5y_i, return_10y_i = loadReturns(portfolio_returns, index_returns)
+    color_10, color_5, color_1 = loadColors(return_1y, return_5y, return_10y, 
+        return_1y_i, return_5y_i, return_10y_i)
+    beta, VaR, standev = loadMetrics()
 
-        # Get the daily returns
-        daily_returns = np.diff(portfolio_returns.Return, n=1)[-200:]
-        VaR = "$" + str(round(-np.percentile(daily_returns, 1),2)) 
-        standev = str(round(np.std(daily_returns), 2))
+    daily_returns = loadDailyReturns()
+    stationary_figure = getStationaryFigure(daily_returns)
+    histogram = getHistogram(daily_returns)
         
     return html.Div(
         [
@@ -241,7 +324,7 @@ def create_layout(app):
                         html.Br([]),
                         html.Br([]),
                         html.Div(
-                            children=[html.Img(src=app.get_asset_url("stationary_placeholder.jpg"))],
+                            children=[stationary_figure],
                             className='eight columns'
                         ),
                         html.Div(
@@ -250,7 +333,7 @@ def create_layout(app):
                                 html.P("Volatility (GARCH)",  style={'font-size':'140%'}),
                                 html.P("-",  style={'font-size':'250%'}),
                                 html.Br([]),
-                                html.P("Standard deviation",  style={'font-size':'140%'}),
+                                html.P("Standard deviation (1 day)",  style={'font-size':'140%'}),
                                 html.P(standev,  style={'font-size':'250%'})
                             ],
                             className='four columns',
@@ -286,8 +369,7 @@ def create_layout(app):
                         style={'text-align': 'center'}),
 
                     html.Div(children=[
-                        html.Img(src=app.get_asset_url("histogram-placeholder.png"),
-                            style={'height':'100%', 'width':'100%'})
+                        histogram,
                         ],
                         className='five columns')
 

@@ -13,21 +13,13 @@ from pages import (
     reddit,
     overview,
 )
-from utils import Header, make_dash_table, stocks, plotly_colors
+from utils import Header, make_dash_table, stocks, plotly_colors, createEmptyDatasets
 import pandas as pd
 import numpy as np
 import yfinance as yf
 
-# Creating an empty portfolio, diversification and returns dataframe
-# TODO: allow uploading a CSV file with tickers and number of shares
-df_portfolio = pd.DataFrame(columns=['Ticker', 'Name', 'Number of Shares', 'Price', 'Value (USD)', 'Industry'])
-df_portfolio.to_csv('data/df_portfolio.csv', index=False)
-
-df_diversification = pd.DataFrame(columns=['Industry', 'Total Value', 'Relative Value'])
-df_diversification.to_csv('data/df_sector_diversification.csv', index=False)
-
-df_returns = pd.DataFrame(columns=['Date', 'Return'])
-df_returns.to_csv('data/df_portfolio_returns.csv', index=False)
+# Make sure we start cleanly
+createEmptyDatasets()
 
 app = dash.Dash(
     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}]
@@ -73,6 +65,7 @@ def update_portfolio(
         number: str):
     # Load the portfolio file because it contains all positions up to now
     df_portfolio = pd.read_csv('data/df_portfolio.csv')
+
     # If the button has been clicked at least once (needed because dash
     # executes all callbacks during initial load)
     if n_clicks != 0:
@@ -109,8 +102,9 @@ def update_portfolio(
             how='inner', on='Ticker')
         df_portfolio = df_portfolio[[
             'Ticker', 'Name', 'Number of Shares', 'Price', 'Value (USD)', 'Industry'
-        ]]
-        # Rounding errors because of float can happen e.g. 17.0000000003
+            ]]
+
+        # Rounding errors because of float type can happen e.g. 17.0000000003
         df_portfolio['Number of Shares'] = df_portfolio['Number of Shares'].apply(lambda x: round(x, 2))
         df_portfolio['Value (USD)'] = df_portfolio['Value (USD)'].apply(lambda x: round(x, 2))
         
@@ -305,11 +299,9 @@ def getPortfolioReturns(
         f.write(str(esg_gov))
     with open('data/beta.txt', 'w') as f:
         f.write(str(beta))
-    print("written")
     return ''
 
 
+
 if __name__ == "__main__":
-    #company = yf.Ticker("VZ")
-    #print(company.sustainability['Value']['governanceScore'])
     app.run_server(debug=True)

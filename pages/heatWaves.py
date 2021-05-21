@@ -2,24 +2,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 
-from utils import Header, make_dash_table
+from utils import Header, make_dash_table, loadESG, loadDailyReturns
 import pandas as pd
 
 
-
 def create_layout(app):
-    df_portfolio = pd.read_csv('data/df_portfolio.csv')
-    esg_env, esg_soc, esg_gov = "-", "-", "-"
-    if df_portfolio.shape[0] > 0:
-        f = open('data/esg_env.txt', 'r')
-        esg_env = str(round(float(f.readline()), 4))
-        f.close()
-        f = open('data/esg_soc.txt', 'r')
-        esg_soc = str(round(float(f.readline()), 4))
-        f.close()
-        f = open('data/esg_gov.txt', 'r')
-        esg_gov = str(round(float(f.readline()), 4))
-        f.close()
+    esg_env, esg_soc, esg_gov = loadESG()
+    daily_returns = loadDailyReturns()
+
     return html.Div(
         [
             Header(app),
@@ -28,6 +18,7 @@ def create_layout(app):
                 [
                     # Row 1
                     html.Div(
+                        # Global Heatwave data
                         [html.Div(
                                 [html.H6(["Global heatwave data"], className="subtitle padded")],
                                 className="twelve columns",
@@ -35,6 +26,7 @@ def create_layout(app):
                         className="row ",
                     ),
                     html.P("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."),
+                    
                     # Map
                     html.Div(
                             children=[
@@ -113,6 +105,8 @@ def create_layout(app):
 
                     ],
                     className="row")
+
+
 
                 ],
                 className="sub_page",

@@ -1,6 +1,11 @@
 import dash_html_components as html
 import dash_core_components as dcc
 
+
+import pandas as pd
+import numpy as np
+import yfinance as yf
+
 stocks = {'VZ': 'Verizon Communications Inc.',
           'AAPL': 'Apple Inc.',
           'MSFT': 'Microsoft Corp.',
@@ -99,3 +104,114 @@ def make_dash_table(df):
             html_row.append(html.Td([row[i]]))
         table.append(html.Tr(html_row))
     return table
+
+
+def createEmptyDatasets():
+    # Creating an empty portfolio, diversification and returns dataframe
+    # TODO: allow uploading a CSV file with tickers and number of shares
+    df_portfolio = pd.DataFrame(columns=['Ticker', 'Name', 'Number of Shares', 'Price', 'Value (USD)', 'Industry'])
+    df_portfolio.to_csv('data/df_portfolio.csv', index=False)
+
+    df_diversification = pd.DataFrame(columns=['Industry', 'Total Value', 'Relative Value'])
+    df_diversification.to_csv('data/df_sector_diversification.csv', index=False)
+
+    df_returns = pd.DataFrame(columns=['Date', 'Return'])
+    df_returns.to_csv('data/df_portfolio_returns.csv', index=False)
+
+def loadDailyReturns():
+    # Get returns
+    portfolio_returns = pd.read_csv('data/df_portfolio_returns.csv')
+    # Switched to daily returns
+    daily_returns = portfolio_returns.Return.pct_change().dropna()
+    portfolio_returns = portfolio_returns.iloc[1:]
+    portfolio_returns.loc[:, 'daily_returns'] = daily_returns
+    return portfolio_returns
+
+def loadESG():
+    df_portfolio = pd.read_csv('data/df_portfolio.csv')
+    esg_env, esg_soc, esg_gov = "-", "-", "-"
+    if df_portfolio.shape[0] > 0:
+        f = open('data/esg_env.txt', 'r')
+        esg_env = str(round(float(f.readline()), 4))
+        f.close()
+        f = open('data/esg_soc.txt', 'r')
+        esg_soc = str(round(float(f.readline()), 4))
+        f.close()
+        f = open('data/esg_gov.txt', 'r')
+        esg_gov = str(round(float(f.readline()), 4))
+        f.close()
+    return esg_env, esg_soc, esg_gov
+
+def loadReturns(portfolio_returns, index_returns):
+    # Calculate key metrics
+    return_10y, return_10y_i  = "-", "-"
+    return_5y, return_5y_i = "-", "-"
+    return_1y, return_1y_i = "-", "-"
+    if portfolio_returns.shape[0] > 0: # if stocks in portfolio
+        # Get start values
+        start_investment = portfolio_returns.Return[0]
+        index_start = index_returns['Close'][0]
+        ratio = start_investment/index_start
+
+        # Modify index returns to match initial investment as portfolio value 10 years ago
+        index_returns.Close = index_returns['Close']*ratio
+
+        # Get the number of days
+        days = portfolio_returns.shape[0]
+        days_i = index_returns.shape[0]
+
+        # Calculate key numbers
+        now = portfolio_returns.Return[days-1]
+        ago_5y = portfolio_returns.Return[days-5*365-1]
+        ago_1y = portfolio_returns.Return[days-366]
+        index_5y = index_returns['Close'][days_i-5*365-1]
+        index_1y = index_returns['Close'][days_i-365]
+        index_now = index_returns['Close'][days_i-1]
+        return_10y = round((now - start_investment)*100/start_investment,2)
+        return_5y = round((now - ago_5y)*100/ago_5y,2)
+        return_1y = round((now - ago_1y)*100/ago_1y,2)
+        return_10y_i = round((index_now - start_investment)*100/start_investment,2)
+        return_5y_i = round((index_now - index_5y)*100/index_5y,2)
+        return_1y_i = round((index_now - index_1y)*100/index_1y,2)
+
+    return return_1y, return_5y, return_10y, return_1y_i, return_5y_i, return_10y_i
+
+def loadColors(return_1y, return_5y, return_10y, 
+    return_1y_i, return_5y_i, return_10y_i):
+    color_10, color_5, color_1 = 'black', 'black', 'black' 
+    if return_1y != "-": # if stocks in portfolio
+        color_10, color_5, color_1 = 'red', 'red', 'red' 
+        if return_10y > return_10y_i:
+            color_10 = 'green'
+        if return_5y > return_5y_i:
+            color_5 = 'green'
+        if return_1y > return_1y_i:
+            color_1 = 'green'
+    return color_10, color_5, color_1
+    
+def loadMetrics():
+    # Load the portfolio returns
+    portfolio_returns = pd.read_csv('data/df_portfolio_returns.csv')
+    df_portfolio = pd.read_csv("data/df_portfolio.csv")
+    beta, VaR, standev = "-", "-", "-"
+    if portfolio_returns.shape[0] > 0: # if stocks in portfolio
+        # Get the beta
+        f = open('data/beta.txt', 'r')
+        beta = str(round(float(f.readline()), 4))
+        f.close()
+
+        # Get the daily returns and portfolio value
+        daily_returns = portfolio_returns.Return.pct_change().dropna()
+        total_value = sum(df_portfolio['Value (USD)'])
+
+        # Calculate non-parametric VaR and standard deviation
+        VaR = "$" + str(round(-np.percentile(daily_returns, 1) * total_value,2))
+        standev = str(round(np.std(daily_returns) * 100, 2)) + "%"
+    return beta, VaR, standev
+
+
+
+
+
+
+
