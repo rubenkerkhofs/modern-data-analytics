@@ -1,10 +1,10 @@
 import dash_html_components as html
 import dash_core_components as dcc
+from model import Model
 
 import plotly.graph_objs as go
+import pandas as pd
 from utils import Header, make_dash_table, loadESG, loadDailyReturns
-
-
 
 
 def getStationaryFigure(portfolio_returns):
@@ -93,9 +93,23 @@ def getStationaryFigure(portfolio_returns):
     )
 
 
+def GetVaRForecasts(r):
+    try:
+        df_portfolio = pd.read_csv("data/df_portfolio.csv")
+        total_value = sum(df_portfolio['Value (USD)'])
+        model = Model(r)
+        model.fit()
+        mean, volatility = model.forecast()
+        VaR = "$" + str(round(-(mean - 1.96*volatility)*total_value, 2))
+    except:
+        VaR = "-"
+    return VaR
+
+
 def create_layout(app):
     daily_returns = loadDailyReturns()
     stationary_figure = getStationaryFigure(daily_returns)
+    VaR = GetVaRForecasts(daily_returns.daily_returns)
 
     return html.Div(
         [
@@ -106,26 +120,63 @@ def create_layout(app):
                     # Exposure to heat wave risk
                     html.Div(
                         [html.Div(
-                                [html.H6(["Exposure to heat wave risk"], className="subtitle padded")],
-                                className="twelve columns"
-                            )],
+                            [html.H6(["Exposure to heat wave risk"],
+                                     className="subtitle padded")],
+                            className="twelve columns"
+                        )],
                         className="row ",
                     ),
                     html.P("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."),
-                   
-                   # Figure of stationary returns
-                   html.Div(
+
+                    # Figure of stationary returns
+                    html.Div(
                         children=[stationary_figure],
-                        className= " six columns",
+                        className=" six columns",
                         id='fig-sector-diversification'
+                    ),
+
+                    html.Div([
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Br([]),
+                    ]),
+
+                    html.P("In order to estimate the exposure to heat waves, we estimate the VaR using an AR-GARCH model with and without heat wave information as an external regressor."),
+                    html.Br([]),
+
+                    html.Div(
+                        children=[
+                            html.Div(children=[
+                                html.P("Value at Risk - No heatwave"),
+                                html.P(VaR, style={'font-size': '250%'})
+                            ],
+                                className="six columns",
+                                style={'text-align': 'center'}),
+                            html.Div(children=[
+                                html.P("Value at Risk - Heatwave"),
+                                html.P(VaR, style={'font-size': '250%'})
+                            ],
+                                className="six columns",
+                                style={'text-align': 'center'})
+                        ],
+                        className="row"
                     )
-
-
-
                 ],
                 className="sub_page",
             ),
         ],
         className="page",
     )
-
