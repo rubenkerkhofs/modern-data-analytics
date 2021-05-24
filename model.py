@@ -5,6 +5,8 @@ from arch import arch_model
 import statsmodels.api as sm
 import yfinance as yf
 
+from utils import loadHeatwaves
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -24,6 +26,7 @@ class Model:
                                      p=p, q=q
                                      )
         self.ex = exogenous_regressor
+        np.random.seed(123456)
 
     def __getGarchPredictions(self):
         # !!!!linear model optimized separately from GARCH model!!!!
@@ -38,7 +41,7 @@ class Model:
 
             # Get true volatility
             r_filtered = self.r[i-99:i+1]
-            true_volatility.append(np.std(r_filtered))
+            true_volatility.append(np.std(r_filtered)**2)
         result = pd.DataFrame(true_volatility, columns=['true_volatility'])
         result.loc[:, 'garch_volatility_prediction'] = garch_estimates
         return result
@@ -62,6 +65,7 @@ class Model:
         y = garch_pred['true_volatility']
         mod = sm.OLS(y, X)
         mod = mod.fit()
+        self.summary_lr = mod.summary() 
 
         # Save result for forecast
         self.intercept = mod.params['const']
@@ -83,13 +87,19 @@ class Model:
 
     def summary(self):
         print(self.res.summary())
+        print(self.summary_lr)
 
 
 if __name__ == "__main__":
     index = yf.Ticker('XWD.TO')
     index_returns = index.history(period='10y')
-    ex = np.random.uniform(0, 1, index_returns.shape[0]-1)
+    heatwaves = loadHeatwaves()
+    index_returns = index_returns.merge(heatwaves, 
+        on = "Date", how = "left")
+    index_returns.loc[index_returns['heatwave'].isna(), 
+        'heatwave'] = 0
     r = index_returns['Open']
+    ex = index_returns['heatwave'][1:] 
     r = r.pct_change().dropna()
     model = Model(r, exogenous_regressor=ex)
     model.fit()

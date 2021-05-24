@@ -3,7 +3,8 @@ import dash_html_components as html
 import plotly.graph_objs as go
 from model import Model
 
-from utils import Header, make_dash_table, loadESG, loadDailyReturns
+from utils import Header, loadESG
+from utils import loadDailyReturns, loadHeatwaves
 import pandas as pd
 import numpy as np
 
@@ -93,27 +94,37 @@ def getStationaryFigure(portfolio_returns):
     )
 
 
-def GetVaRForecasts(r):
-    df_portfolio = pd.read_csv("data/df_portfolio.csv")
-    total_value = sum(df_portfolio['Value (USD)'])
-    ex = np.random.uniform(0,1, len(r))
-    model = Model(r, exogenous_regressor=ex)
-    model.fit()
-    mean_0, volatility_0 = model.forecast(exogenous=[0])
-    mean_1, volatility_1 = model.forecast(exogenous=[1])
-    VaR_0 = "$" + str(round(-(mean_0 - 1.96*volatility_0)*total_value, 2))
-    VaR_1 = "$" + str(round(-(mean_1 - 1.96*volatility_1)*total_value, 2))
-    mean_0, mean_1 = round(mean_0*100, 2), round(mean_1*100, 2)
-    volatility_0, volatility_1 = round(volatility_0*100, 2), round(volatility_1*100, 2)
-    #VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1 = "-", "-", "-", "-", "-", "-"
+def GetVaRForecasts(r, ex):
+    try:
+        df_portfolio = pd.read_csv("data/df_portfolio.csv")
+        total_value = sum(df_portfolio['Value (USD)'])
+        model = Model(r, exogenous_regressor=ex)
+        model.fit()
+        mean_0, volatility_0 = model.forecast(exogenous=[0])
+        mean_1, volatility_1 = model.forecast(exogenous=[1])
+        VaR_0 = "$" + "{:,}".format(round(-(mean_0 - 2.326*volatility_0)*total_value, 2)).replace(',', ' ')
+        VaR_1 = "$" + "{:,}".format(round(-(mean_1 - 2.326*volatility_1)*total_value, 2)).replace(',', ' ')
+        mean_0, mean_1 = round(mean_0*100, 2), round(mean_1*100, 2)
+        volatility_0, volatility_1 = round(volatility_0*100, 2), round(volatility_1*100, 2)
+    except:
+        VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1 = "-", "-", "-", "-", "-", "-"
     return VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1
 
 
 def create_layout(app):
     esg_env, esg_soc, esg_gov = loadESG()
-    daily_returns = loadDailyReturns()
+    daily_returns = loadDailyReturns().set_index('Date', drop=True)
+    # Link heatwave data to the returns
+    heatwaves = loadHeatwaves().set_index('Date', drop=True)
+    daily_returns = daily_returns.join(heatwaves, how='left')
+    daily_returns.loc[daily_returns['heatwave'].isna(), 
+        'heatwave'] = 0
+    daily_returns = daily_returns.reset_index()
+    #  Construct figure and calculate key values
     stationary_figure = getStationaryFigure(daily_returns)
-    VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1 = GetVaRForecasts(daily_returns.daily_returns)
+    VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1 = GetVaRForecasts(
+        daily_returns.daily_returns, 
+        daily_returns.heatwave)
 
     return html.Div(
         [

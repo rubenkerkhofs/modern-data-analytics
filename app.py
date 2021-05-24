@@ -45,18 +45,13 @@ def display_page(
         return portfolioPerformance.create_layout(app)
     elif pathname == "/dash-financial-report/heatWaves":
         return heatWaves.create_layout(app)
-    elif pathname == "/dash-financial-report/reddit":
-        return reddit.create_layout(app)
-    elif pathname == "/dash-financial-report/overview":
-        return overview.create_layout(app)
     else:
         return ourApproach.create_layout(app)
+
 
 ##########################
 # Portfolio page callbacks
 ##########################
-
-
 @app.callback(
     Output('table-portfolio-overview', "children"),
     Input('Add-stock-button', 'n_clicks'),
@@ -165,7 +160,7 @@ def update_portfolio_text(
     else:
         st = "stocks"
         # Return a text tailored to the portfolio
-    return "The portfolio consists of {n} {st} and has a total value of {usd} US dollars. The majority of the funds is invested in the {ind} industry. The largest position is the one in the {lc} ({lct}) stock which has a value of {lcv} US dollars.".format(
+    return "The portfolio consists of {n} {st} and has a total value of {usd:,} US dollars. The majority of the funds is invested in the {ind} industry. The largest position is the one in the {lc} ({lct}) stock which has a value of {lcv:,} US dollars.".format(
         n=number_of_companies,
         st=st,
         usd=round(total_value, 2),
