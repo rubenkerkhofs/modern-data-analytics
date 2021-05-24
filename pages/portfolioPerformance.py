@@ -138,7 +138,6 @@ def create_layout(app):
     color_10, color_5, color_1 = loadColors(return_1y, return_5y, return_10y,
                                             return_1y_i, return_5y_i, return_10y_i)
     beta, VaR, standev = loadMetrics()
-
     daily_returns = loadDailyReturns()
     stationary_figure = getStationaryFigure(daily_returns)
     histogram = getHistogram(daily_returns)

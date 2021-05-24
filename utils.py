@@ -79,17 +79,7 @@ def get_menu():
             ),
             dcc.Link(
                 "Heat Waves", href="/dash-financial-report/heatWaves", className="tab"
-            ),
-            dcc.Link(
-                "Reddit",
-                href="/dash-financial-report/reddit",
-                className="tab",
-            ),
-            dcc.Link(
-                "Overview",
-                href="/dash-financial-report/overview",
-                className="tab",
-            ),
+            )
         ],
         className="row all-tabs",
     )
@@ -147,6 +137,31 @@ def loadESG():
         esg_gov = str(round(float(f.readline()), 4))
         f.close()
     return esg_env, esg_soc, esg_gov
+
+
+def loadHeatwaves():
+    us_temp = pd.read_csv('data/df_temperature_us.csv')
+    # Take heatwaves according to wikipedia definition
+    df_US_hw = us_temp[(us_temp['tempanomaly'] >= 6)].filter(regex = 'tempanomaly|time_bnds|time')
+    df_US_hw = pd.DataFrame(df_US_hw)
+    # Modify index to time indication
+    df_US_hw = df_US_hw.set_index(['time', 'time_bnds'])
+    # Remove duplicates to make dataset smaller
+    df_US_hw = df_US_hw.loc[~df_US_hw.index.duplicated(keep = 'last')]
+    df_US_hw = df_US_hw.reset_index() # Do not drop index
+    # Take heatwaves according to wikipedia definition
+    date_frames = list()
+    for i in range(len(df_US_hw)):
+        if df_US_hw['time'][i] > df_US_hw['time_bnds'][i]:
+            date_frames.append(pd.DataFrame(index = pd.date_range(df_US_hw['time_bnds'][i], df_US_hw['time'][i], freq = 'd')))
+        else:
+            date_frames.append(pd.DataFrame(index = pd.date_range(df_US_hw['time'][i], df_US_hw['time_bnds'][i], freq = 'd')))
+    # Save results in a dataframe
+    heatwave_df = pd.concat(date_frames)
+    heatwave_df['heatwave'] = 1
+    heatwave_df = heatwave_df.reset_index()
+    heatwave_df.columns = ['Date', 'heatwave']
+    return heatwave_df.reset_index()
 
 
 def loadReturns(portfolio_returns, index_returns):
@@ -216,6 +231,6 @@ def loadMetrics():
 
         # Calculate non-parametric VaR and standard deviation
         VaR = "$" + \
-            str(round(-np.percentile(daily_returns, 1) * total_value, 2))
+            "{:,}".format(round(-np.percentile(daily_returns, 1) * total_value, 2))
         standev = str(round(np.std(daily_returns) * 100, 2)) + "%"
     return beta, VaR, standev

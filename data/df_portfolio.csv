@@ -1,4 +1,2 @@
 Ticker,Name,Number of Shares,Price,Value (USD),Industry
-AAPL,Apple Inc.,1.0,63.94,63.94,Consumer Electronics
-MSFT,Microsoft Corp.,1.0,247.07,247.07,Software—Infrastructure
-VZ,Verizon Communications Inc.,2.0,57.05,114.11,Telecom Services
+AAPL,Apple Inc.,10000.0,127.31,1273100.0,Consumer Electronics
