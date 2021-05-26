@@ -142,7 +142,7 @@ def loadESG():
 def loadHeatwaves():
     us_temp = pd.read_csv('data/df_temperature_us.csv')
     # Take heatwaves according to wikipedia definition
-    df_US_hw = us_temp[(us_temp['tempanomaly'] >= 6)].filter(regex = 'tempanomaly|time_bnds|time')
+    df_US_hw = us_temp[(us_temp['tempanomaly'] >= 5)].filter(regex = 'tempanomaly|time_bnds|time')
     df_US_hw = pd.DataFrame(df_US_hw)
     # Modify index to time indication
     df_US_hw = df_US_hw.set_index(['time', 'time_bnds'])

@@ -91,21 +91,6 @@ class Model:
 
 
 if __name__ == "__main__":
-    index = yf.Ticker('XWD.TO')
-    index_returns = index.history(period='10y')
-    heatwaves = loadHeatwaves()
-    index_returns = index_returns.merge(heatwaves, 
-        on = "Date", how = "left")
-    index_returns.loc[index_returns['heatwave'].isna(), 
-        'heatwave'] = 0
-    r = index_returns['Open']
-    ex = index_returns['heatwave'][1:] 
-    r = r.pct_change().dropna()
-    model = Model(r, exogenous_regressor=ex)
-    model.fit()
-    mean, volatility = model.forecast(exogenous=[0])
-    print(mean)
-    print(volatility)
-    mean, volatility = model.forecast(exogenous=[1])
-    print(mean)
-    print(volatility)
+    hwy = pd.read_table("data/df_heat_waves_yearly.txt")
+    hwy.columns = ['notes', 'year', 'avg_max_temp', 'avg_heat_index']
+    
