@@ -234,3 +234,12 @@ def loadMetrics():
             "{:,}".format(round(-np.percentile(daily_returns, 1) * total_value, 2))
         standev = str(round(np.std(daily_returns) * 100, 2)) + "%"
     return beta, VaR, standev
+
+
+def loadAnomalies():
+    df = pd.read_pickle("data/GDP_temperature_anomalies_1947_USA.pkl")
+    df['time'] = pd.to_datetime(df['time'])
+    df = df.set_index('time', drop=True)
+    df = df.sort_index()
+    df =  df.drop(["gdp"], axis =1)
+    return df

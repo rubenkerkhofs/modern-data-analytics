@@ -4,12 +4,14 @@ import dash_html_components as html
 import plotly.graph_objs as go
 from model import Model
 
-from utils import Header, loadESG
+from utils import Header, loadESG, loadAnomalies
 from utils import loadDailyReturns, loadHeatwaves
 import pandas as pd
 import numpy as np
 import plotly.express as px
 from datetime import date
+
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 def getStationaryFigure(portfolio_returns):
     return dcc.Graph(
@@ -96,7 +98,6 @@ def getStationaryFigure(portfolio_returns):
         config={"displayModeBar": False},
     )
 
-
 def GetVaRForecasts(r, ex):
     try:
         df_portfolio = pd.read_csv("data/df_portfolio.csv")
@@ -113,7 +114,6 @@ def GetVaRForecasts(r, ex):
         VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1 = "-", "-", "-", "-", "-", "-"
     return VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1
 
-
 def getHeatwaveMetrics(heatwaves):
     heatwaves.loc[:, "year"] = heatwaves.Date.apply(
         lambda x: x.year)
@@ -122,7 +122,6 @@ def getHeatwaveMetrics(heatwaves):
     perMonth = heatwaves.groupby("month").sum()['heatwave']
     perYear = heatwaves.groupby("year").sum()['heatwave']
     number_of_years = len(perYear)
-
 
 def getSummaryStats(heatwaves):
     average = np.mean(heatwaves.avg_max_temp)
@@ -153,7 +152,7 @@ def getHeatwavesPlot(heatwaves):
     )
     fig.add_annotation(x=left_lim + 3, y=avg+0.1,
             text="Average",
-            font=dict( color="red"),
+            font=dict(color="red"),
             arrowcolor="red")
     fig.update_layout(
         font_family="sans-serif",
@@ -171,10 +170,50 @@ def getHeatwavesPlot(heatwaves):
     )
     return fig
 
+def getPredictions():
+    return [html.P("Predictions next five days", style={'font-size': '150%'}),
+            html.P("No heatwave day", style={'font-size': '140%', 'color': 'green'}),
+            html.P("No heatwave day", style={'font-size': '140%', 'color': 'green'}),
+            html.P("No heatwave day", style={'font-size': '140%', 'color': 'green'}),
+            html.P("No heatwave day", style={'font-size': '140%', 'color': 'green'}),
+            html.P("No heatwave day", style={'font-size': '140%', 'color': 'green'})]
+
+def getMaxAnomalyPlot(anomalies):
+    temp = anomalies.timeMax.rolling(window=30).mean()
+    fig = px.line(temp, title='Maximum temperature anomaly (30 month window rolling average)',
+        width = 650, height=300,
+        labels=dict(value="Maximum temperature anomaly", avg_max_temp="Year"))
+    fig.update_layout(
+        font_family="sans-serif",
+        font_color="black",
+        title_x=0.5,
+        title_y=1,
+        showlegend=False,
+        paper_bgcolor='rgba(0,0,0,0)',  # No background
+        plot_bgcolor='rgba(0,0,0,0)',  # No background
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12,
+            font_family="sans-serif"
+        ),
+        margin=dict(l=0, r=0, t=20, b=0)
+    )
+    temp = seasonal_decompose(anomalies.timeMax, model='additive', extrapolate_trend='freq', freq=365)
+    fig.add_scatter(x = temp.trend.index, y = temp.trend.values, mode='lines', opacity=.7)
+    fig.add_annotation(x=1970, y=temp.trend['1970-01-15'],
+            text="Trend line",
+            font=dict(color="red"),
+            arrowcolor="red")
+    return fig
+
+def getTrendlinePlot(anomalies):
+    pass
+
 
 def create_layout(app):
     esg_env, esg_soc, esg_gov = loadESG()
     daily_returns = loadDailyReturns().set_index('Date', drop=True)
+    
     # Link heatwave data to the returns
     heatwaves = loadHeatwaves().set_index('Date', drop=True)
     daily_returns = daily_returns.join(heatwaves, how='left')
@@ -197,6 +236,12 @@ def create_layout(app):
     # Download county heatwave data 2020
     hwc = pd.read_table("data/df_heat_waves_2020.txt")
     county, max_county = getCounty(hwc)
+
+    # Predict heatwaves
+    anomalies = loadAnomalies()
+    figure_max_anomalies = getMaxAnomalyPlot(anomalies)
+    predictions = getPredictions()
+    #figure_trendline = getTrendlinePlot(anomalies)
 
     return html.Div(
         [
@@ -253,6 +298,7 @@ def create_layout(app):
                         )],
                         className="row ",
                     ),
+                    html.H5("Summary statistics", style={'font-size': '150%', "text-decoration": "underline"}),
                     html.Br([]),
                     html.Div(
                         [
@@ -300,10 +346,33 @@ def create_layout(app):
                         className="row"),
                     html.Br([]),
                     html.Br([]),
+                    html.H5("Trend analysis", style={'font-size': '150%', "text-decoration": "underline"}),
+                    html.Br([]),
+                    html.Br([]),
+                    dcc.Graph(figure=figure_max_anomalies),
+                    html.Br([]),
+                    html.P("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."),
+
+                    html.H5("Heat Wave prediction", style={'font-size': '150%', "text-decoration": "underline"}),
+                    html.P("An LSTM neural network is used to predict whether the next days are heat wave days. A heatwave day is defined based on the temperature anomaly score. If this score is greater than five, then it counts as a heat wave day."),
+                    html.Br([]),
+                    html.Div(children=
+                        [
+                            html.Div(children=
+                                predictions,
+                                className="four columns",
+                                style={'text-align': 'center'}),
+                            html.Div(children=
+                                [
+                                    html.P("Placeholder")
+                                ],
+                                className="eight columns")
+                        ],
+                        className="row"),
                     # ESG section
                     html.Div(
                         [html.Div(
-                            [html.H6(["ESG scores portfolio"],
+                            [html.H6(["ESG Risk Ratings portfolio"],
                                      className="subtitle padded")],
                             className="twelve columns"
                         )],
@@ -361,7 +430,8 @@ def create_layout(app):
                             style={'text-align': 'center'}
                         ),
 
-                        html.Div(
+                    # Exposure to heat wave risk
+                    html.Div(
                         [html.Div(
                             [html.H6(["Exposure to heat wave risk"],
                                      className="subtitle padded")],
@@ -431,6 +501,7 @@ def create_layout(app):
         ],
         className="page",
     )
+
 
 
 
