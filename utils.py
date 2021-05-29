@@ -23,6 +23,9 @@ stocks = {'VZ': 'Verizon Communications Inc.',
           'ABI.BR': 'Anheuser-Busch InBev SA/NV',
           'PEP': 'PepsiCo Inc.'}
 
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
 plotly_colors = ['rgb(4,67,123)', 'rgb(84,189,236)', 'rgb(215,224,234)',
                  'rgb(52,140,196)', 'rgb(221, 138, 46)', 'rgb(156,196,44)', 'rgb(208,200,64)']
 
@@ -140,28 +143,28 @@ def loadESG():
 
 
 def loadHeatwaves():
-    us_temp = pd.read_csv('data/df_temperature_us.csv')
-    # Take heatwaves according to wikipedia definition
-    df_US_hw = us_temp[(us_temp['tempanomaly'] >= 5)].filter(regex = 'tempanomaly|time_bnds|time')
-    df_US_hw = pd.DataFrame(df_US_hw)
-    # Modify index to time indication
-    df_US_hw = df_US_hw.set_index(['time', 'time_bnds'])
-    # Remove duplicates to make dataset smaller
-    df_US_hw = df_US_hw.loc[~df_US_hw.index.duplicated(keep = 'last')]
-    df_US_hw = df_US_hw.reset_index() # Do not drop index
-    # Take heatwaves according to wikipedia definition
-    date_frames = list()
-    for i in range(len(df_US_hw)):
-        if df_US_hw['time'][i] > df_US_hw['time_bnds'][i]:
-            date_frames.append(pd.DataFrame(index = pd.date_range(df_US_hw['time_bnds'][i], df_US_hw['time'][i], freq = 'd')))
+    temperatures = loadTemperatures().dropna().tail(365*11)
+    temperatures.DateMax = temperatures.DateMax
+    temps = temperatures.DateMax
+    heatwave = []
+    h = False
+    min_temp = 32.2
+    for i in range(len(temps) - 2):
+        temp_tod = temps[i]
+        temp_tom = temps[i+1]
+        temp_ove = temps[i+1]
+        if h and temp_tod > min_temp:
+            heatwave.append(1)
+        elif temp_tod > min_temp and temp_tom > min_temp and temp_ove > min_temp:
+            heatwave.append(1)
+            h = True 
         else:
-            date_frames.append(pd.DataFrame(index = pd.date_range(df_US_hw['time'][i], df_US_hw['time_bnds'][i], freq = 'd')))
-    # Save results in a dataframe
-    heatwave_df = pd.concat(date_frames)
-    heatwave_df['heatwave'] = 1
-    heatwave_df = heatwave_df.reset_index()
-    heatwave_df.columns = ['Date', 'heatwave']
-    return heatwave_df.reset_index()
+            heatwave.append(0)
+            h = False
+    heatwave.append(0)
+    heatwave.append(0)
+    temperatures.loc[:, 'heatwave'] = heatwave
+    return temperatures['heatwave']
 
 
 def loadReturns(portfolio_returns, index_returns):
@@ -236,10 +239,7 @@ def loadMetrics():
     return beta, VaR, standev
 
 
-def loadAnomalies():
-    df = pd.read_pickle("data/GDP_temperature_anomalies_1947_USA.pkl")
-    df['time'] = pd.to_datetime(df['time'])
-    df = df.set_index('time', drop=True)
-    df = df.sort_index()
-    df =  df.drop(["gdp"], axis =1)
+def loadTemperatures():
+    df = pd.read_pickle("data/dfmaxcel.pkl")
+    df.DateMax = df.DateMax - (45-32.2) # Calibrate temperatures
     return df

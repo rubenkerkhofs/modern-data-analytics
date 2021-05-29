@@ -1,1 +1,5 @@
 Ticker,Name,Number of Shares,Price,Value (USD),Industry
+ABI.BR,Anheuser-Busch InBev SA/NV,10000.0,62.13,621300.0,Beverages—Brewers
+HEIA.AS,Heineken N.V.,10000.0,97.68,976800.0,Beverages—Brewers
+KO,The Coca-Cola Company,10000.0,55.33,553250.0,Beverages—Non-Alcoholic
+PEP,PepsiCo Inc.,10000.0,148.05,1480450.0,Beverages—Non-Alcoholic

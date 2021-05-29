@@ -9,9 +9,7 @@ from pages import (
     ourApproach,
     portfolio,
     portfolioPerformance,
-    heatWaves,
-    reddit,
-    overview,
+    heatWaves
 )
 from utils import Header, make_dash_table, stocks, plotly_colors, createEmptyDatasets
 import pandas as pd
@@ -264,8 +262,6 @@ def checkInputs(
 ############################
 # Performance page callbacks
 ############################
-
-
 @app.callback(
     Output('filler', 'children'),
     Input('table-portfolio-overview', "children"),
