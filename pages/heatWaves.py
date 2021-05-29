@@ -275,7 +275,7 @@ def getTemperaturePredictions(df):
 
 
 def getTemperatureAnomaliesPlot():
-    df = pd.read_pickle("data\GDP_temperature_anomalies_1947_USA.pkl")
+    df = pd.read_pickle("data/anomalies.pkl")
     df = df[['time', 'timeMax']]
     df.columns = ['date', 'anomaly_score']
     df.loc[:, "month"] = df.date.apply(lambda x: x.month)
