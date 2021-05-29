@@ -1,24 +1,25 @@
+# Models
+from arch import arch_model
+import statsmodels.api as sm
+
+# Other required packages
 import numpy as np
 import pandas as pd
 
-from arch import arch_model
-import statsmodels.api as sm
-import yfinance as yf
 
-from utils import loadHeatwaves
-
+# Surpress warnings
 import warnings
 warnings.filterwarnings("ignore")
 
 
 class Model:
-    def __init__(self, r,
-                 exogenous_regressor=None,
-                 mean_model="ARX",
-                 volatility_model="Garch",
-                 p=1, q=1):
+    def __init__(self, returns: pd.Series,
+                 exogenous_regressor: pd.Series = None,
+                 mean_model: str = "ARX",
+                 volatility_model: str = "Garch",
+                 p: int = 1, q: int = 1):
         # Define initial volatility model
-        self.r = r
+        self.r = returns
         self.arch_model = arch_model(self.r,
                                      x=exogenous_regressor,
                                      mean=mean_model,
@@ -28,6 +29,9 @@ class Model:
         self.ex = exogenous_regressor
         np.random.seed(123456)
 
+    #################
+    # Private methods
+    #################
     def __getGarchPredictions(self):
         # !!!!linear model optimized separately from GARCH model!!!!
         garch_estimates = []
@@ -46,6 +50,9 @@ class Model:
         result.loc[:, 'garch_volatility_prediction'] = garch_estimates
         return result
 
+    ################
+    # Public methods
+    ################
     def fit(self):
         ######
         # !! Linear correction model and ARX + GARCH model are
@@ -65,14 +72,14 @@ class Model:
         y = garch_pred['true_volatility']
         mod = sm.OLS(y, X)
         mod = mod.fit()
-        self.summary_lr = mod.summary() 
+        self.summary_lr = mod.summary()
 
         # Save result for forecast
         self.intercept = mod.params['const']
         self.garch_vol = mod.params['garch_volatility_prediction']
         self.dummy_var = mod.params['dummy']
 
-    def forecast(self, exogenous=None):
+    def forecast(self, exogenous: int = None):
         if self.ex is None:
             forecasts = self.res.forecast(reindex=False)
             mean = forecasts.mean['h.1'].values[0]
@@ -88,9 +95,3 @@ class Model:
     def summary(self):
         print(self.res.summary())
         print(self.summary_lr)
-
-
-if __name__ == "__main__":
-    hwy = pd.read_table("data/df_heat_waves_yearly.txt")
-    hwy.columns = ['notes', 'year', 'avg_max_temp', 'avg_heat_index']
-    

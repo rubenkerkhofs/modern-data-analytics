@@ -1,16 +1,67 @@
+# Dash packages
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
-from utils import Header, make_dash_table, loadReturns
+import plotly.express as px
+
+# Utils functions and variables
+from utils import Header, loadReturns
 from utils import loadColors, loadMetrics, loadDailyReturns
+
+# Other required packages
 import pandas as pd
 import numpy as np
 import yfinance as yf
 
-import plotly.express as px
+##################
+# HELPER FUNCTIONS
+##################
 
 
-def getStationaryFigure(portfolio_returns):
+def getHistogram(df: pd.DataFrame) -> dcc.Graph:
+    assert "daily_returns" in df.columns,\
+        "Dataframe should have a column named: daily_returns"
+
+    fig = px.histogram(df, x="daily_returns",
+                       width=300, height=150,
+                       labels=dict(daily_returns="Daily return"),
+                       color_discrete_sequence=["#04437b"])
+
+    try:  # If no portfolio selected, this fails
+        VaR = np.percentile(df['daily_returns'], 1)
+    except:
+        VaR = 0
+    fig.add_shape(
+        go.layout.Shape(type='line', xref='x', yref='y',
+                        x0=VaR, y0=0, x1=VaR, y1=150, line=dict(color="Red")
+                        ),
+        row=1, col=1
+    )
+    fig.update_layout(
+        font_family="sans-serif",
+        font_color="black",
+        title_x=0.5,
+        title_y=0.82,
+        yaxis_visible=False,
+        yaxis_showticklabels=False,
+        paper_bgcolor='rgba(0,0,0,0)',  # No background
+        plot_bgcolor='rgba(0,0,0,0)',  # No background
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12,
+            font_family="sans-serif"
+        ),
+        margin=dict(l=0, r=0, t=0, b=0)
+    )
+    return dcc.Graph(figure=fig)
+
+
+def getStationaryFigure(portfolio_returns: pd.DataFrame) -> dcc.Graph:
+    assert "Date" in portfolio_returns.columns, \
+        "Dataframe should have a column named: Date"
+    assert "daily_returns" in portfolio_returns.columns, \
+        "Dataframe should have a column named: daily_returns"
+
     return dcc.Graph(
         id="returns",
         figure={
@@ -94,40 +145,9 @@ def getStationaryFigure(portfolio_returns):
     )
 
 
-def getHistogram(df):
-    fig = px.histogram(df, x="daily_returns",
-                       width=300, height=150,
-                       labels=dict(daily_returns="Daily return"),
-                       color_discrete_sequence=["#04437b"])
-
-    try:
-        VaR = np.percentile(df['daily_returns'], 1)
-    except:
-        VaR = 0
-    fig.add_shape(
-        go.layout.Shape(type='line', xref='x', yref='y',
-                        x0=VaR, y0=0, x1=VaR, y1=150, line=dict(color="Red")
-                        ),
-        row=1, col=1
-    )
-    fig.update_layout(yaxis_visible=False, yaxis_showticklabels=False)
-    fig.update_layout(
-        font_family="sans-serif",
-        font_color="black",
-        title_x=0.5,
-        title_y=0.82,
-        paper_bgcolor='rgba(0,0,0,0)',  # No background
-        plot_bgcolor='rgba(0,0,0,0)',  # No background
-        hoverlabel=dict(
-            bgcolor="white",
-            font_size=12,
-            font_family="sans-serif"
-        ),
-        margin=dict(l=0, r=0, t=0, b=0)
-    )
-    return dcc.Graph(figure=fig)
-
-
+#############################
+# LAYOUT FUNCTION USED BY APP
+#############################
 def create_layout(app):
     # Load all necessary information and calculate metrics
     portfolio_returns = pd.read_csv('data/df_portfolio_returns.csv')
@@ -141,7 +161,6 @@ def create_layout(app):
     daily_returns = loadDailyReturns()
     stationary_figure = getStationaryFigure(daily_returns)
     histogram = getHistogram(daily_returns)
-
     return html.Div(
         [
             Header(app),
