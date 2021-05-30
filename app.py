@@ -30,8 +30,6 @@ app.layout = html.Div(
 )
 
 # Update page when the menu is used to navigate
-
-
 @app.callback(
     Output("page-content", "children"),
     Input("url", "pathname"))

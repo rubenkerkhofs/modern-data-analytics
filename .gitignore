@@ -4,3 +4,6 @@ venv
 venv/
 .venv
 .vscode/settings.json
+envmda/*
+__*
+.vs/*

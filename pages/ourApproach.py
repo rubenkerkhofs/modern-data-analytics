@@ -15,14 +15,15 @@ def create_layout(app):
             html.Div(
                 [
                     # Row 3
+                    # Title box
                     html.Div(
                         [
                             html.Div(
                                 [
-                                    html.H5("Assignment"),
+                                    html.H5("Heat wave impact"),
                                     html.Br([]),
                                     html.P(
-                                        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+                                        "In the 1960s, Major cities experienced, on average, about two heat waves per year. In the 2010s, that number rose to more than six heat waves per year. These heat waves are also lasting longer, on average 47 days longer than in 1960. Even under different climate models and emission scenarios, results indicate that extreme heat events worsen. Heatwaves, or heat and hot weather that can last for several days, can have a significant impact on society, including a rise in heat-related deaths. More than 70 000 people died during the 2003 heatwave in Europe. Workers who are exposed to extreme heat or work in hot environments may be at risk of heat stress. Exposure to extreme heat can result in occupational illnesses and injuries. Heat stress can result in heat stroke, heat exhaustion, heat cramps, or heat rashes. Humidity is an important factor in heat index assessment. When the humidity is high, water does not evaporate as easily and so it becomes difficult for the body to cool off through sweating.",
                                         style={"color": "#ffffff"},
                                         className="row",
                                     ),
@@ -31,7 +32,24 @@ def create_layout(app):
                             )
                         ],
                         className="row",
-                    )
+                    ),
+                    # Our approach subtitle
+                    html.Div(
+                        [
+                            html.Div(
+                                [html.H6(["Our approach"],
+                                         className="subtitle padded")],
+                                className="twelve columns",
+                            )
+                        ],
+                        className="rows",
+                    ),
+                    html.P("This dashboard was created for investors who want to assess the short-term impact of heat waves on their portfolio. It allows these investors to specify their portfolio, after which the application applies pre-made models to the portfolio data and provides the user with contextual information related to heat waves."),
+                    html.Br([]),
+                    html.P("Although a company's fundamentals are not affected by heat waves in the short term, we believe that a single heat wave can have an impact on a portfolio in the short term. The reasoning goes like this: heat waves are known to have a negative impact on the mental health of people, including investors, and this negative state of mind could in turn affect the stock market in the short term. "),
+                    html.Br([]),
+                    html.P("This general idea is illustrated below. ")
+
                 
                 ],
                 className="sub_page",
