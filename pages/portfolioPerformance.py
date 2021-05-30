@@ -37,6 +37,10 @@ def getHistogram(df: pd.DataFrame) -> dcc.Graph:
                         ),
         row=1, col=1
     )
+    fig.add_annotation(x=VaR, y=140,
+                       text="VaR",
+                       font=dict(color="red"),
+                       arrowcolor="red")
     fig.update_layout(
         font_family="sans-serif",
         font_color="black",
@@ -353,9 +357,8 @@ def create_layout(app):
                             html.Div(
                                 children=[
                                     html.Br([]),
-                                    html.P("Volatility (GARCH)",
-                                           style={'font-size': '140%'}),
-                                    html.P("-",  style={'font-size': '250%'}),
+                                    html.Br([]),
+                                    html.Br([]),
                                     html.Br([]),
                                     html.P("Standard deviation (1 day)",
                                            style={'font-size': '140%'}),

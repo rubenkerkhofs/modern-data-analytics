@@ -8,12 +8,10 @@ import numpy as np
 import requests
 
 stocks: dict = {
-    'VZ': 'Verizon Communications Inc.',
           'AAPL': 'Apple Inc.',
           'ABI.BR': 'Anheuser-Busch InBev SA/NV',
           'AMZN': 'Amazon.com Inc.',
           'BAC': 'Bank of America Corp.',
-          'BRK-A': 'Berkshire Hathaway Inc.',
           'DIS': 'The Walt Disney Company',
           'HEIA.AS': 'Heineken N.V.',
           'JPM': 'JP Morgan Chase & Co.',
@@ -23,6 +21,7 @@ stocks: dict = {
           'NVDA': 'Nvidia Corp.',
           'PEP': 'PepsiCo Inc.',
           'UNH': 'United Health Group Inc.',
+          'VZ': 'Verizon Communications Inc.',
           'WMT': 'Walmart Inc.'}
 
 months: list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",

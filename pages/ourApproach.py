@@ -48,9 +48,11 @@ def create_layout(app):
                     html.Br([]),
                     html.P("Although a company's fundamentals are not affected by heat waves in the short term, we believe that a single heat wave can have an impact on a portfolio in the short term. The reasoning goes like this: heat waves are known to have a negative impact on the mental health of people, including investors, and this negative state of mind could in turn affect the stock market in the short term. "),
                     html.Br([]),
-                    html.P("This general idea is illustrated below. ")
-
-                
+                    html.P("This general idea is illustrated below: "),
+                    html.Div(html.Img(src=app.get_asset_url('reddit_results.PNG'),
+                                style={"width": "80%"}),
+                            style={'textAlign': 'center'}),
+                    html.P("During the second heatwave period in 2019, both the invester sentiment and the value of the S&P 500 went down. This effect can of course be random, however, this should be investigated. The dashboard uses a collection of models to determine whether the portfolio specified by the user is exposed to this kind of risk.")
                 ],
                 className="sub_page",
             ),
