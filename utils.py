@@ -5,14 +5,13 @@ import dash_core_components as dcc
 # Other required packages
 import pandas as pd
 import numpy as np
+import requests
 
 stocks: dict = {
-    'VZ': 'Verizon Communications Inc.',
           'AAPL': 'Apple Inc.',
           'ABI.BR': 'Anheuser-Busch InBev SA/NV',
           'AMZN': 'Amazon.com Inc.',
           'BAC': 'Bank of America Corp.',
-          'BRK-A': 'Berkshire Hathaway Inc.',
           'DIS': 'The Walt Disney Company',
           'HEIA.AS': 'Heineken N.V.',
           'JPM': 'JP Morgan Chase & Co.',
@@ -22,6 +21,7 @@ stocks: dict = {
           'NVDA': 'Nvidia Corp.',
           'PEP': 'PepsiCo Inc.',
           'UNH': 'United Health Group Inc.',
+          'VZ': 'Verizon Communications Inc.',
           'WMT': 'Walmart Inc.'}
 
 months: list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -100,6 +100,20 @@ def get_menu():
         className="row all-tabs",
     )
     return menu
+
+
+def getPushshiftData(query, after, before, score, sub, endpoint = 'submission', size = 25):
+    url = 'https://api.pushshift.io/reddit/search/' + endpoint
+    parameters = {'subreddit': sub, 'title' : query, 'after' : str(after), 'before' : str(before), 'size': 500, 'score': score}
+    
+    r = requests.get(url, parameters)
+    try:
+        data = r.json()
+    except:
+        data = {'data':[]}
+        
+    return data['data']
+
 
 
 def Header(app):
@@ -235,3 +249,5 @@ def make_dash_table(df: pd.DataFrame):
             html_row.append(html.Td([row[i]]))
         table.append(html.Tr(html_row))
     return table
+
+
