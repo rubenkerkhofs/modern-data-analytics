@@ -302,6 +302,7 @@ def getPortfolioReturns(
         f.write(str(beta))
     return ''
 
+    
 
 
 

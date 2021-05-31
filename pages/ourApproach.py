@@ -13,15 +13,7 @@ def create_layout(app):
             html.Div([Header(app)]),
             # page 1
             html.Div(
-                [   
-                    dcc.Loading(
-                        id="loading-1",
-                        children=[html.Div([html.Div(id="loading-output-1")])],
-                        type="default",
-                    ),
-                    html.Br([]),
-                    html.Br([]),
-                    # Row 3
+                [   # Row 3
                     # Title box
                     html.Div(
                         [
