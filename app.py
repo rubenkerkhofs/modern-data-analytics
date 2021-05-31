@@ -17,6 +17,8 @@ import numpy as np
 import yfinance as yf
 import time
 
+from pages.heatWaves import getTemperatureAnomaliesTSPlot
+
 # Make sure we start cleanly
 createEmptyDatasets()
 
@@ -303,6 +305,41 @@ def getPortfolioReturns(
     return ''
 
     
+
+#########################
+# Heatwaves page callback
+#########################
+@app.callback(
+    Output('temperature-anomalies', 'figure'),
+    Input('apply-years', 'n_clicks'),
+    State('start-year', 'value'),
+    State('end-year', 'value')
+)
+def updateAnomaliesPlot(n: int, start_year: int, end_year: int):
+    return getTemperatureAnomaliesTSPlot(start_year, end_year)
+
+@app.callback(
+    Output("start-year-error", "children"),
+    Input("apply-years", "n_clicks"),
+    State("start-year", 'value')
+)
+def checkStartYear(n: int, start_year: int):
+    if start_year is None and n > 0:
+        return "Start year needs to be between 1947 and 2021"
+    else:
+        return ""
+
+
+@app.callback(
+    Output("end-year-error", "children"),
+    Input("apply-years", "n_clicks"),
+    State("end-year", 'value')
+)
+def checkEndYear(n: int, end_year: int):
+    if end_year is None and n > 0:
+        return "End year needs to be between 1947 and 2021"
+    else:
+        return ""
 
 
 

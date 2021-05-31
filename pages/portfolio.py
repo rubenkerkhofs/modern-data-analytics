@@ -18,14 +18,7 @@ def create_layout(app):
             Header(app),
             # page 3
             html.Div(
-                [   dcc.Loading(
-                        id="loading-1",
-                        children=[html.Div([html.Div(id="loading-output-1")])],
-                        type="default",
-                    ),
-                    html.Br([]),
-                    html.Br([]),
-                    # First title
+                [   # First title
                     html.Div(
                         [
                             html.Div(
