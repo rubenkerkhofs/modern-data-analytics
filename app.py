@@ -15,7 +15,6 @@ from utils import Header, make_dash_table, stocks, plotly_colors, createEmptyDat
 import pandas as pd
 import numpy as np
 import yfinance as yf
-import time
 
 from pages.heatWaves import getTemperatureAnomaliesTSPlot
 
