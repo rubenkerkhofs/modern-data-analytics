@@ -401,14 +401,19 @@ def create_layout(app):
 
                         html.Div(children=[
                             histogram,
-                        ],
-                            className='five columns')
-
-                    ],
-                        className="row")
+                            ],
+                            className='five columns'),
+                         ],
+                        className="row"),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Div(html.A('Check the impact of heatwaves on your portfolio', href="/dash-financial-report/heatWaves", id="next-page"),
+                            style={"textAlign": "right", 'font-size': '150%', "text-decoration": "underline"})
                 ],
                 className="sub_page",
             ),
         ],
         className="page",
     )
+
+

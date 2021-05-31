@@ -18,7 +18,13 @@ def create_layout(app):
             Header(app),
             # page 3
             html.Div(
-                [
+                [   dcc.Loading(
+                        id="loading-1",
+                        children=[html.Div([html.Div(id="loading-output-1")])],
+                        type="default",
+                    ),
+                    html.Br([]),
+                    html.Br([]),
                     # First title
                     html.Div(
                         [
@@ -188,6 +194,8 @@ def create_layout(app):
                         [html.P('', id='filler')],  # used to update returns
                         className="row ",
                     ),
+                    html.Div(html.A('Once you have your portfolio, explore its performance by clicking here', href="/dash-financial-report/portfolioPerformance", id="next-page"),
+                        style={"textAlign": "right", 'font-size': '150%', "text-decoration": "underline"})
                 ],
                 className="sub_page",
             ),

@@ -15,6 +15,7 @@ from utils import Header, make_dash_table, stocks, plotly_colors, createEmptyDat
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import time
 
 # Make sure we start cleanly
 createEmptyDatasets()
@@ -300,6 +301,8 @@ def getPortfolioReturns(
     with open('data/beta.txt', 'w') as f:
         f.write(str(beta))
     return ''
+
+
 
 
 if __name__ == "__main__":

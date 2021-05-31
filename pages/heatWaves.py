@@ -418,6 +418,13 @@ def create_layout(app):
                                 className="three columns",
                             ),
                             # Add date
+                            html.Div(
+                                [
+                                    html.P(["At the moment only US. The code has been written in such a way that is supports multiple countries but because the scraping of data takes too long it is not implemented."], style={
+                                           "color": "#7a7a7a"})
+                                ],
+                                className="six columns",
+                            )
                         ],
                         className="row ",
                     ),

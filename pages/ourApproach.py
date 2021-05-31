@@ -13,7 +13,14 @@ def create_layout(app):
             html.Div([Header(app)]),
             # page 1
             html.Div(
-                [
+                [   
+                    dcc.Loading(
+                        id="loading-1",
+                        children=[html.Div([html.Div(id="loading-output-1")])],
+                        type="default",
+                    ),
+                    html.Br([]),
+                    html.Br([]),
                     # Row 3
                     # Title box
                     html.Div(
@@ -52,7 +59,11 @@ def create_layout(app):
                     html.Div(html.Img(src=app.get_asset_url('reddit_results.PNG'),
                                 style={"width": "80%"}),
                             style={'textAlign': 'center'}),
-                    html.P("During the second heatwave period in 2019, both the invester sentiment and the value of the S&P 500 went down. This effect can of course be random, however, this should be investigated. The dashboard uses a collection of models to determine whether the portfolio specified by the user is exposed to this kind of risk.")
+                    html.P("During the second heatwave period in 2019, both the invester sentiment and the value of the S&P 500 went down. This effect can of course be random, however, this should be investigated. The dashboard uses a collection of models to determine whether the portfolio specified by the user is exposed to this kind of risk."),
+                    html.Br([]),
+                    html.Br([]),
+                    html.Div(html.A('Click here to move to the next page and pick your portfolio', href="/dash-financial-report/portfolio", id="next-page"),
+                        style={"textAlign": "right", 'font-size': '150%', "text-decoration": "underline"})
                 ],
                 className="sub_page",
             ),
