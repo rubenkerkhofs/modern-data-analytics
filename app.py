@@ -315,7 +315,10 @@ def getPortfolioReturns(
     State('end-year', 'value')
 )
 def updateAnomaliesPlot(n: int, start_year: int, end_year: int):
-    return getTemperatureAnomaliesTSPlot(start_year, end_year)
+    if n > 0:
+        return getTemperatureAnomaliesTSPlot(start_year=start_year, end_year=end_year)
+    else:
+        return getTemperatureAnomaliesTSPlot(start_year=1947, end_year=2021)
 
 @app.callback(
     Output("start-year-error", "children"),

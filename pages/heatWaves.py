@@ -263,6 +263,7 @@ def getTemperatureAnomaliesPlot() -> plotly.graph_objs.Figure:
 
 
 def getTemperatureAnomaliesTSPlot(start_year: int, end_year: int) -> plotly.graph_objs.Figure:
+    country = "United States"
     df = pd.read_pickle("data/anomalies.pkl")
     df = df[['time', 'timeMax']]
     df.loc[:, "year"] = df.time.apply(lambda x: x.year)
@@ -271,11 +272,11 @@ def getTemperatureAnomaliesTSPlot(start_year: int, end_year: int) -> plotly.grap
     df = df.set_index("time")
     df = df.drop("year", axis=1)
     fig = px.line(df, title='Temperature anomalies in the {c} from {y1} to {y2}'.format(
-                    c = "United States",
+                    c = country,
                     y1 = str(start_year),
                     y2 = str(end_year)),
                 width=650, height=300,
-                labels=dict(value="Maximum temperature anomaly", avg_max_temp="Year"))
+                labels=dict(value="Maximum temperature anomaly"))
     fig.update_layout(
         font_family="sans-serif",
         font_color="black",
