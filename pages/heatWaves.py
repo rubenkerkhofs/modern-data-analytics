@@ -615,7 +615,7 @@ def create_layout(app):
                     ),
                     html.Br([]),
                     html.Br([]),
-                    dcc.Graph(figure=getTemperatureAnomaliesTSPlot(1947, 2021), id="temperature-anomalies"),
+                    dcc.Graph(id="temperature-anomalies"),
                     html.Br([]),
                     html.Br([]),
                     html.H5("Heat Wave forecasts", style={
