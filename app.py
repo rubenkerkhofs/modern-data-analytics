@@ -16,6 +16,8 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 
+from pages.heatWaves import getTemperatureAnomaliesTSPlot
+
 # Make sure we start cleanly
 createEmptyDatasets()
 
@@ -300,6 +302,48 @@ def getPortfolioReturns(
     with open('data/beta.txt', 'w') as f:
         f.write(str(beta))
     return ''
+
+    
+
+#########################
+# Heatwaves page callback
+#########################
+@app.callback(
+    Output('temperature-anomalies', 'figure'),
+    Input('apply-years', 'n_clicks'),
+    State('start-year', 'value'),
+    State('end-year', 'value')
+)
+def updateAnomaliesPlot(n: int, start_year: int, end_year: int):
+    if n > 0:
+        fig = getTemperatureAnomaliesTSPlot(start_year=start_year, end_year=end_year)
+    else:
+        fig = getTemperatureAnomaliesTSPlot(start_year=2000, end_year=2021)
+    return fig
+
+@app.callback(
+    Output("start-year-error", "children"),
+    Input("apply-years", "n_clicks"),
+    State("start-year", 'value')
+)
+def checkStartYear(n: int, start_year: int):
+    if start_year is None and n > 0:
+        return "Start year needs to be between 1947 and 2021"
+    else:
+        return ""
+
+
+@app.callback(
+    Output("end-year-error", "children"),
+    Input("apply-years", "n_clicks"),
+    State("end-year", 'value')
+)
+def checkEndYear(n: int, end_year: int):
+    if end_year is None and n > 0:
+        return "End year needs to be between 1947 and 2021"
+    else:
+        return ""
+
 
 
 if __name__ == "__main__":

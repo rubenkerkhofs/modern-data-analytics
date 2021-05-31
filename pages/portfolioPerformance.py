@@ -178,6 +178,7 @@ def create_layout(app):
                                 [
                                     html.H6("Performance",
                                             className="subtitle padded"),
+                                    html.P("In order to gauge performance we can compare the returns of the portfolio to the MSCI world index,  a market cap weighted stock market index of 1,585 companies throughout the world."),
                                     dcc.Graph(
                                         id="returns",
                                         figure={
@@ -383,7 +384,8 @@ def create_layout(app):
                             html.Br([]),
                             html.P("VaR 1% (non-parametric)",
                                    style={'font-size': '140%'}),
-                            html.P(VaR, style={'font-size': '250%'})
+                            html.P(VaR, style={'font-size': '250%'}),
+                            html.P("The VaR represents the potential loss in the portfolio given the probability of occurrence for the defined loss.")
                         ],
                             className='four columns',
                             style={'text-align': 'center'}),
@@ -394,21 +396,27 @@ def create_layout(app):
                             html.Br([]),
                             html.P("Portfolio Beta", style={
                                    'font-size': '140%'}),
-                            html.P(beta, style={'font-size': '250%'})
+                            html.P(beta, style={'font-size': '250%'}),
+                            html.P("The beta value is given by the change in the value of the portfolio given a change in the market.")
                         ],
                             className='three columns',
                             style={'text-align': 'center'}),
 
                         html.Div(children=[
                             histogram,
-                        ],
-                            className='five columns')
-
-                    ],
-                        className="row")
+                            ],
+                            className='five columns'),
+                         ],
+                        className="row"),
+                        html.Br([]),
+                        html.Br([]),
+                        html.Div(html.A('Check the impact of heatwaves on your portfolio', href="/dash-financial-report/heatWaves", id="next-page"),
+                            style={"textAlign": "right", 'font-size': '150%', "text-decoration": "underline"})
                 ],
                 className="sub_page",
             ),
         ],
         className="page",
     )
+
+

@@ -262,6 +262,39 @@ def getTemperatureAnomaliesPlot() -> plotly.graph_objs.Figure:
     return fig
 
 
+def getTemperatureAnomaliesTSPlot(start_year: int, end_year: int) -> plotly.graph_objs.Figure:
+    country = "United States"
+    df = pd.read_pickle("data/anomalies.pkl")
+    df = df[['time', 'timeMax']]
+    df.loc[:, "year"] = df.time.apply(lambda x: x.year)
+    df = df[df.year <= end_year]
+    df = df[df.year >= start_year]
+    df = df.set_index("time")
+    df = df.drop("year", axis=1)
+    fig = px.line(df, title='Temperature anomalies in the {c} from {y1} to {y2}'.format(
+                    c = country,
+                    y1 = str(start_year),
+                    y2 = str(end_year)),
+                width=650, height=300,
+                labels=dict(value="Maximum temperature anomaly"))
+    fig.update_layout(
+        font_family="sans-serif",
+        font_color="black",
+        title_x=0.5,
+        title_y=1,
+        showlegend=False,
+        paper_bgcolor='rgba(0,0,0,0)',  # No background
+        plot_bgcolor='rgba(0,0,0,0)',  # No background
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12,
+            font_family="sans-serif"
+        ),
+        margin=dict(l=0, r=0, t=20, b=0)
+    )
+    return fig
+
+
 def getTemperaturePredictions(df: pd.DataFrame) -> tuple:
     assert "DateMax" in df.columns, \
         "Dataframe should have a column named: DateMax"
@@ -353,11 +386,15 @@ def create_layout(app):
     daily_returns = daily_returns.reset_index()
 
     #  Construct figure and calculate key values
+    error_message_var0, error_message_var1 = "", ""
     stationary_figure = getStationaryFigure(daily_returns)
     VaR_0, VaR_1, mean_0, mean_1, volatility_0, volatility_1 = getVaRForecasts(
         daily_returns.daily_returns,
         daily_returns.heatwave)
-
+    if VaR_0 is np.NaN:
+        error_message_var0 = "Solution did not convergence. This can happen during live trading, please restart the app and try again."
+    if VaR_1 is np.NaN:
+        error_message_var1 = "Solution did not convergence. This can happen during live trading, please restart the app and try again."
     # Download yearly heatwave summary statistics
     hwy = pd.read_table("data/df_heat_waves_yearly.txt")
     hwy.columns = ['notes', 'year', 'avg_max_temp', 'avg_heat_index']
@@ -418,6 +455,13 @@ def create_layout(app):
                                 className="three columns",
                             ),
                             # Add date
+                            html.Div(
+                                [
+                                    html.P(["At the moment only US. The code has been written in such a way that is supports multiple countries but because the scraping of data takes too long it is not implemented."], style={
+                                           "color": "#7a7a7a"})
+                                ],
+                                className="six columns",
+                            )
                         ],
                         className="row ",
                     ),
@@ -507,6 +551,73 @@ def create_layout(app):
                         className="row"),
                     html.Br([]),
                     html.Br([]),
+                    html.Div(
+                        [html.Div([
+                            html.P(["Explore the evolution of temperature anomalies during a given time period."], style={
+                                           "color": "#7a7a7a"})],
+                                className="three columns",
+                            ),
+                            html.Div(
+                                [
+                                    html.P(
+                                        "Start year:"
+                                    ),
+                                    dcc.Input(
+                                        id='start-year',
+                                        type='number', min=1947, max=2021,
+                                        placeholder=1947, step=1
+                                    ),
+                                    html.P("", style={"color": "#FF0000"}, id="start-year-error")
+                                ],
+                                className="two columns",
+                                style={"color": "#696969"},
+                            ),
+                            html.Div(
+                                [html.P("")],
+                                className="two columns",
+                                style={"color": "#696969"},
+                            ),
+                            html.Div(
+                                [
+                                    html.P(
+                                        "End year:"
+                                    ),
+                                    dcc.Input(
+                                        id='end-year',
+                                        type='number', min=1947, max=2021,
+                                        placeholder=2021, step=1
+                                    ),
+                                    html.P("", style={"color": "#FF0000"}, id="end-year-error")
+                                ],
+                                className="two columns",
+                                style={"color": "#696969"},
+                            ),
+                            html.Div(
+                                [html.P("")],
+                                className="two columns",
+                                style={"color": "#696969"},
+                            ),
+                            html.Div(
+                                [
+                                    html.P(
+                                        "Apply years"
+                                    ),
+                                    html.Button('Apply',
+                                                id='apply-years',
+                                                n_clicks=0
+                                                )
+                                ],
+                                className="two columns",
+                                style={"color": "#696969"},
+                            ),
+                            ],
+                            className="row"
+                    ),
+                    html.Br([]),
+                    html.Br([]),
+                    dcc.Graph(id="temperature-anomalies"),
+                    html.Br([]),
+                    html.Br([]),
                     html.H5("Heat Wave forecasts", style={
                             'font-size': '150%', "text-decoration": "underline"}),
                     html.P("A SARIMAX model is used to forecast the temperature over the next five years. The model is trained using daily temperature data of the last five years. To determine the optimal parameters, the AIC was used."),
@@ -579,7 +690,8 @@ def create_layout(app):
                                     html.P("Value at Risk - No heatwave"),
                                     html.P(VaR_0, style={'font-size': '250%'}),
                                     html.P("The expected 1 day return is equal to {ret}% with a volatility of {v}%.".format(
-                                        ret=mean_0, v=volatility_0))
+                                        ret=mean_0, v=volatility_0)),
+                                    html.P(error_message_var0, style={"color": "red"})
                                 ],
                                     className="six columns",
                                     style={'text-align': 'center'}),
@@ -587,7 +699,8 @@ def create_layout(app):
                                     html.P("Value at Risk - Heatwave"),
                                     html.P(VaR_1, style={'font-size': '250%'}),
                                     html.P("The expected 1 day return is equal to {ret}% with a volatility of {v}%.".format(
-                                        ret=mean_1, v=volatility_1))
+                                        ret=mean_1, v=volatility_1)),
+                                    html.P(error_message_var1, style={"color": "red"})
                                 ],
                                     className="six columns",
                                     style={'text-align': 'center'})
